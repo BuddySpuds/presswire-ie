@@ -20,8 +20,9 @@
     "cro",
     "verification"
   ],
-  "author": "PressWire.ie",
+  "author": "Robert Porter <robert@presswire.ie>",
   "license": "MIT",
+  "copyright": "Copyright (c) 2025 Robert Porter",
   "dependencies": {
     "@octokit/rest": "^20.0.2",
     "node-fetch": "^2.7.0",

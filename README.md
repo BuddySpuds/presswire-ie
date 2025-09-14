@@ -148,6 +148,12 @@ View your PR performance:
 
 MIT License - see LICENSE file for details
 
+## 👨‍💻 Author
+
+**Robert Porter**
+- GitHub: [@BuddySpuds](https://github.com/BuddySpuds)
+- Copyright © 2025 Robert Porter. All rights reserved.
+
 ---
 
-Built with ❤️ for Irish businesses 🇮🇪
+Built with ❤️ for Irish businesses 🇮🇪 by Robert Porter
