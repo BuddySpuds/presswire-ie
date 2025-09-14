@@ -1,0 +1,60 @@
+name: Test PR
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - staging
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check for security vulnerabilities
+        run: npm audit || true
+
+      - name: Run API tests
+        run: |
+          # Start server in background
+          NODE_ENV=development PORT=4000 node server.js &
+          SERVER_PID=$!
+
+          # Wait for server to start
+          sleep 5
+
+          # Run test script
+          ./test-local.sh
+
+          # Stop server
+          kill $SERVER_PID
+
+      - name: Test HTML validation
+        run: |
+          npx html-validate index.html generate.html admin.html success.html || true
+
+      - name: Check for broken links
+        run: |
+          # Simple check for local links
+          grep -r 'href="/' . --include="*.html" | grep -v 'href="//' || true

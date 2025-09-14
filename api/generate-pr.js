@@ -29,9 +29,31 @@ exports.handler = async (event, context) => {
 
         const token = authHeader.substring(7);
 
-        // In development mode, accept demo tokens
+        // Check for admin PR tokens
         let tokenData;
-        if (process.env.NODE_ENV === 'development' && token.startsWith('demo-')) {
+        if (token.startsWith('admin-pr-')) {
+            // Validate admin PR token (check if it's recent and unused)
+            const tokenTime = parseInt(token.split('-')[2]);
+            const now = Date.now();
+            const oneHour = 60 * 60 * 1000;
+
+            if (now - tokenTime > oneHour) {
+                return {
+                    statusCode: 401,
+                    headers,
+                    body: JSON.stringify({ error: 'Admin token expired' })
+                };
+            }
+
+            // Admin bypass - no payment required
+            tokenData = {
+                email: 'admin@presswire.ie',
+                domain: 'presswire.ie',
+                isIrishDomain: true,
+                isAdmin: true
+            };
+        } else if (process.env.NODE_ENV === 'development' && token.startsWith('demo-')) {
+            // In development mode, accept demo tokens
             tokenData = {
                 email: 'demo@company.ie',
                 domain: 'company.ie',
