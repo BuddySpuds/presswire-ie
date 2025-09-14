@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en-IE">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Press Release Directory - PressWire.ie</title>
+    <meta name="description" content="Browse all domain-verified press releases from Irish companies">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white border-b">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between h-16">
+                <a href="/" class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-black rounded flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">PW</span>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-sm">PressWire.ie</div>
+                        <div class="text-xs text-gray-500">Press Release Directory</div>
+                    </div>
+                </a>
+                <a href="/generate.html" class="bg-black text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-gray-900">
+                    Submit PR →
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <h1 class="text-3xl font-bold mb-8">All Press Releases</h1>
+
+        <div class="grid gap-6" id="pr-list">
+            <!-- Press releases will be dynamically loaded here -->
+            <div class="bg-white p-6 rounded-lg border">
+                <p class="text-gray-500">No press releases yet. Be the first to publish!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // In production, this would fetch from an API or read from GitHub
+    // For now, showing placeholder
+    const samplePRs = [
+        {
+            title: "Example Company Announces Expansion",
+            date: "2024-01-15",
+            company: "Example Ltd",
+            cro: "123456",
+            url: "/pr/example-123456.html"
+        }
+    ];
+
+    // Function to load PRs (would connect to API in production)
+    function loadPRs() {
+        const container = document.getElementById('pr-list');
+
+        if (samplePRs.length > 0) {
+            container.innerHTML = samplePRs.map(pr => `
+                <a href="${pr.url}" class="bg-white p-6 rounded-lg border hover:border-black transition block">
+                    <div class="flex items-start justify-between mb-2">
+                        <h2 class="text-lg font-semibold">${pr.title}</h2>
+                        <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold">VERIFIED</span>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        ${pr.company} • CRO: ${pr.cro} • ${pr.date}
+                    </div>
+                </a>
+            `).join('');
+        }
+    }
+
+    // Load on page ready
+    loadPRs();
+    </script>
+</body>
+</html>
