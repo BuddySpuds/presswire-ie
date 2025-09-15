@@ -94,7 +94,10 @@ exports.handler = async (event, context) => {
         // Generate unique slug for the PR
         const slug = generateSlug(company.name, company.croNumber);
 
-        // Create the HTML page
+        // Create management token
+        const managementToken = crypto.randomBytes(32).toString('hex');
+
+        // Create the HTML page (with analytics tracking)
         const htmlContent = createPRHTML({
             ...enhancedPR,
             company,
@@ -103,10 +106,32 @@ exports.handler = async (event, context) => {
             publishedAt: new Date().toISOString()
         });
 
+        // Save PR data for management
+        const prData = {
+            slug,
+            managementToken,
+            headline: enhancedPR.headline,
+            summary: enhancedPR.summary,
+            content: enhancedPR.content,
+            keyPoints,
+            contact,
+            company,
+            verifiedDomain: tokenData.domain,
+            url: `https://presswire.ie/pr/${slug}.html`,
+            createdAt: new Date().toISOString(),
+            published: true,
+            editCount: 0,
+            package: prPackage
+        };
+
         // Save to GitHub (in production)
         if (process.env.GITHUB_TOKEN) {
             await saveToGitHub(slug, htmlContent);
+            await savePRData(prData);
         }
+
+        // Generate management URL
+        const managementUrl = `https://presswire.ie/manage.html?token=${managementToken}`;
 
         // Return the generated PR data
         return {
@@ -116,12 +141,14 @@ exports.handler = async (event, context) => {
                 success: true,
                 pr: {
                     url: `https://presswire.ie/pr/${slug}.html`,
+                    managementUrl,
                     slug,
                     headline: enhancedPR.headline,
                     summary: enhancedPR.summary,
                     content: enhancedPR.content
                 },
-                message: 'Press release generated successfully'
+                message: 'Press release generated successfully',
+                managementLink: managementUrl
             })
         };
 
@@ -432,9 +459,33 @@ function createPRHTML(data) {
 
     <footer class="mt-20 py-8 border-t">
         <div class="max-w-7xl mx-auto px-6 text-center text-sm text-gray-500">
-            <p>© 2024 PressWire.ie - Ireland's Domain-Verified Press Release Platform</p>
+            <p>© 2025 PressWire.ie - Ireland's Domain-Verified Press Release Platform</p>
         </div>
     </footer>
+
+    <!-- Analytics Tracking -->
+    <script>
+    (function() {
+        // Generate or retrieve session ID
+        let sessionId = localStorage.getItem('pw_session');
+        if (!sessionId) {
+            sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+            localStorage.setItem('pw_session', sessionId);
+        }
+
+        // Track page view
+        fetch('/api/analytics', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'track-view',
+                slug: '${slug}',
+                sessionId: sessionId,
+                referrer: document.referrer || 'direct'
+            })
+        }).catch(err => console.log('Analytics tracking failed:', err));
+    })();
+    </script>
 </body>
 </html>`;
 }
@@ -462,4 +513,13 @@ async function saveToGitHub(slug, content) {
     } catch (error) {
         console.error('Failed to save to GitHub:', error);
     }
+}
+
+async function savePRData(prData) {
+    // In production, save to GitHub data/prs.json
+    // For now, use in-memory storage from manage-pr.js
+    const { savePR } = require('./manage-pr');
+    savePR(prData);
+
+    console.log(`PR data saved with management token for ${prData.slug}`);
 }
