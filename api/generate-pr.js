@@ -117,7 +117,7 @@ exports.handler = async (event, context) => {
             contact,
             company,
             verifiedDomain: tokenData.domain,
-            url: `https://presswire.ie/pr/${slug}.html`,
+            url: `https://presswire.ie/news/${slug}.html`,
             createdAt: new Date().toISOString(),
             published: true,
             editCount: 0,
@@ -140,7 +140,7 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({
                 success: true,
                 pr: {
-                    url: `https://presswire.ie/pr/${slug}.html`,
+                    url: `https://presswire.ie/news/${slug}.html`,
                     managementUrl,
                     slug,
                     headline: enhancedPR.headline,
@@ -361,9 +361,9 @@ function createPRHTML(data) {
     <meta name="description" content="${summary}">
     <meta property="og:title" content="${headline}">
     <meta property="og:description" content="${summary}">
-    <meta property="og:url" content="https://presswire.ie/pr/${slug}.html">
+    <meta property="og:url" content="https://presswire.ie/news/${slug}.html">
     <meta property="og:type" content="article">
-    <link rel="canonical" href="https://presswire.ie/pr/${slug}.html">
+    <link rel="canonical" href="https://presswire.ie/news/${slug}.html">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -392,7 +392,7 @@ function createPRHTML(data) {
         },
         "mainEntityOfPage": {
             "@type": "WebPage",
-            "@id": "https://presswire.ie/pr/${slug}.html"
+            "@id": "https://presswire.ie/news/${slug}.html"
         }
     }
     </script>

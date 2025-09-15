@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en-IE">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News & Press Releases - PressWire.ie</title>
+    <meta name="description" content="Latest press releases from verified Irish companies. Real-time news feed with domain-verified announcements.">
+
+    <!-- OpenGraph Tags -->
+    <meta property="og:title" content="Irish Press Releases - PressWire.ie">
+    <meta property="og:description" content="Latest news and announcements from verified Irish companies">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://presswire.ie/news/">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .industry-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .tech { background: #EBF5FF; color: #1E40AF; }
+        .retail { background: #FEF3C7; color: #92400E; }
+        .finance { background: #DBEAFE; color: #1E3A8A; }
+        .health { background: #D1FAE5; color: #065F46; }
+        .hospitality { background: #FCE7F3; color: #831843; }
+        .share-dropdown { display: none; }
+        .share-dropdown.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white border-b sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between h-16">
+                <a href="/" class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-black rounded flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">PW</span>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-sm">PressWire.ie</div>
+                        <div class="text-xs text-gray-500">News Directory</div>
+                    </div>
+                </a>
+                <div class="flex items-center space-x-4">
+                    <a href="/about.html" class="text-sm text-gray-600 hover:text-black">About</a>
+                    <a href="/contact.html" class="text-sm text-gray-600 hover:text-black">Contact</a>
+                    <a href="/generate.html" class="bg-black text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-gray-900">
+                        Submit PR →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Search Section -->
+    <div class="bg-white border-b">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <h1 class="text-3xl font-bold mb-2">Irish Press Releases</h1>
+            <p class="text-gray-600 mb-6">Domain-verified news from legitimate Irish companies</p>
+
+            <!-- Search Bar -->
+            <div class="relative max-w-2xl">
+                <input type="text" id="searchInput" placeholder="Search by company, headline, or keyword..."
+                       class="w-full px-4 py-3 pr-10 border rounded-lg focus:ring-2 focus:ring-black focus:border-black">
+                <svg class="absolute right-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+
+            <!-- Filters Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg border p-6 sticky top-24">
+                    <h3 class="font-semibold mb-4">Filter Results</h3>
+
+                    <!-- Industry Filter -->
+                    <div class="mb-6">
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Industry</label>
+                        <select id="industryFilter" class="w-full px-3 py-2 border rounded-md text-sm">
+                            <option value="">All Industries</option>
+                            <optgroup label="Business">
+                                <option value="technology">Technology</option>
+                                <option value="ecommerce">E-commerce</option>
+                                <option value="retail">Retail</option>
+                                <option value="finance">Finance & Banking</option>
+                            </optgroup>
+                            <optgroup label="Lifestyle">
+                                <option value="food-beverage">Food & Beverage</option>
+                                <option value="hospitality">Hospitality</option>
+                                <option value="health-wellness">Health & Wellness</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- PR Type Filter -->
+                    <div class="mb-6">
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Type</label>
+                        <select id="typeFilter" class="w-full px-3 py-2 border rounded-md text-sm">
+                            <option value="">All Types</option>
+                            <option value="product-launch">Product Launch</option>
+                            <option value="funding">Funding News</option>
+                            <option value="partnership">Partnership</option>
+                            <option value="expansion">Expansion</option>
+                            <option value="award">Award/Recognition</option>
+                        </select>
+                    </div>
+
+                    <!-- Date Filter -->
+                    <div class="mb-6">
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Date Range</label>
+                        <select id="dateFilter" class="w-full px-3 py-2 border rounded-md text-sm">
+                            <option value="">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="year">This Year</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort Options -->
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Sort By</label>
+                        <select id="sortBy" class="w-full px-3 py-2 border rounded-md text-sm">
+                            <option value="latest">Latest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="company">Company A-Z</option>
+                        </select>
+                    </div>
+
+                    <button onclick="resetFilters()" class="w-full mt-4 text-sm text-gray-600 hover:text-black">
+                        Reset Filters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Press Releases Grid -->
+            <div class="lg:col-span-3">
+                <div class="flex justify-between items-center mb-6">
+                    <div id="resultsCount" class="text-sm text-gray-600">
+                        Showing <span id="prCount">3</span> press releases
+                    </div>
+                </div>
+
+                <!-- PR Cards Grid -->
+                <div class="grid gap-6" id="pr-list">
+                    <!-- Sample PR 1 - Tech Funding -->
+                    <article class="bg-white rounded-lg border hover:border-black transition p-6 pr-card"
+                             data-industry="technology" data-type="funding" data-date="2025-09-15">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold">VERIFIED</span>
+                                <span class="industry-badge tech">Technology</span>
+                                <span class="text-xs text-gray-500">Funding</span>
+                            </div>
+                            <div class="relative">
+                                <button onclick="toggleShare(this)" class="text-gray-400 hover:text-black">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026a9.001 9.001 0 01-7.432 0m9.032-4.026A9.001 9.001 0 0112 3c-4.474 0-8.268 3.12-9.032 7.326m0 0A9.001 9.001 0 0012 21c4.474 0 8.268-3.12 9.032-7.326"></path>
+                                    </svg>
+                                </button>
+                                <div class="share-dropdown absolute right-0 mt-8 bg-white border rounded-lg shadow-lg p-2 w-48 z-10">
+                                    <a href="#" onclick="shareOn('twitter', 'TechStartup Ireland Raises €5M')" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">Twitter/X</a>
+                                    <a href="#" onclick="shareOn('linkedin', 'TechStartup Ireland Raises €5M')" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">LinkedIn</a>
+                                    <a href="#" onclick="shareOn('facebook', 'TechStartup Ireland Raises €5M')" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">Facebook</a>
+                                    <a href="#" onclick="shareOn('whatsapp', 'TechStartup Ireland Raises €5M')" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">WhatsApp</a>
+                                    <a href="#" onclick="copyLink()" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">Copy Link</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href="/news/techstartup-raises-5m-series-a.html" class="block group">
+                            <h2 class="text-xl font-bold mb-2 group-hover:text-blue-600 transition">
+                                TechStartup Ireland Raises €5M Series A Funding to Accelerate European Expansion
+                            </h2>
+                            <p class="text-gray-600 mb-3 line-clamp-2">
+                                Dublin-based AI solutions provider TechStartup Ireland announces successful completion of Series A funding round led by European venture capital firm InnovateVC, with plans to create 30 new jobs.
+                            </p>
+                        </a>
+
+                        <div class="flex items-center justify-between text-sm text-gray-500">
+                            <div class="flex items-center space-x-4">
+                                <span>TechStartup Ireland</span>
+                                <span>CRO: 654321</span>
+                            </div>
+                            <span>2 hours ago</span>
+                        </div>
+                    </article>
+
+                    <!-- Sample PR 2 - Retail Expansion -->
+                    <article class="bg-white rounded-lg border hover:border-black transition p-6 pr-card"
+                             data-industry="retail" data-type="expansion" data-date="2025-09-14">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold">VERIFIED</span>
+                                <span class="industry-badge retail">Retail</span>
+                                <span class="text-xs text-gray-500">Expansion</span>
+                            </div>
+                            <div class="relative">
+                                <button onclick="toggleShare(this)" class="text-gray-400 hover:text-black">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026a9.001 9.001 0 01-7.432 0m9.032-4.026A9.001 9.001 0 0112 3c-4.474 0-8.268 3.12-9.032 7.326m0 0A9.001 9.001 0 0012 21c4.474 0 8.268-3.12 9.032-7.326"></path>
+                                    </svg>
+                                </button>
+                                <div class="share-dropdown absolute right-0 mt-8 bg-white border rounded-lg shadow-lg p-2 w-48 z-10">
+                                    <a href="#" onclick="shareOn('twitter', 'Emerald Fashion Opens 10th Store')" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">Twitter/X</a>
+                                    <a href="#" onclick="shareOn('linkedin', 'Emerald Fashion Opens 10th Store')" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">LinkedIn</a>
+                                    <a href="#" onclick="shareOn('facebook', 'Emerald Fashion Opens 10th Store')" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">Facebook</a>
+                                    <a href="#" onclick="shareOn('whatsapp', 'Emerald Fashion Opens 10th Store')" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">WhatsApp</a>
+                                    <a href="#" onclick="copyLink()" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">Copy Link</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href="/news/irish-fashion-opens-10th-store.html" class="block group">
+                            <h2 class="text-xl font-bold mb-2 group-hover:text-blue-600 transition">
+                                Emerald Fashion Opens 10th Store in Galway, Creating 25 Local Jobs
+                            </h2>
+                            <p class="text-gray-600 mb-3 line-clamp-2">
+                                Leading Irish fashion retailer Emerald Fashion celebrates milestone with flagship store opening in Galway city center, reinforcing commitment to sustainable fashion and local employment.
+                            </p>
+                        </a>
+
+                        <div class="flex items-center justify-between text-sm text-gray-500">
+                            <div class="flex items-center space-x-4">
+                                <span>Emerald Fashion Ltd</span>
+                                <span>CRO: 789012</span>
+                            </div>
+                            <span>Yesterday</span>
+                        </div>
+                    </article>
+
+                    <!-- Sample PR 3 - Partnership -->
+                    <article class="bg-white rounded-lg border hover:border-black transition p-6 pr-card"
+                             data-industry="technology" data-type="partnership" data-date="2025-09-13">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold">VERIFIED</span>
+                                <span class="industry-badge tech">Technology</span>
+                                <span class="text-xs text-gray-500">Partnership</span>
+                            </div>
+                            <div class="relative">
+                                <button onclick="toggleShare(this)" class="text-gray-400 hover:text-black">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026a9.001 9.001 0 01-7.432 0m9.032-4.026A9.001 9.001 0 0112 3c-4.474 0-8.268 3.12-9.032 7.326m0 0A9.001 9.001 0 0012 21c4.474 0 8.268-3.12 9.032-7.326"></path>
+                                    </svg>
+                                </button>
+                                <div class="share-dropdown absolute right-0 mt-8 bg-white border rounded-lg shadow-lg p-2 w-48 z-10">
+                                    <a href="#" onclick="shareOn('twitter', 'Cork Companies Partner on Green Energy')" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">Twitter/X</a>
+                                    <a href="#" onclick="shareOn('linkedin', 'Cork Companies Partner on Green Energy')" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">LinkedIn</a>
+                                    <a href="#" onclick="shareOn('facebook', 'Cork Companies Partner on Green Energy')" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">Facebook</a>
+                                    <a href="#" onclick="shareOn('whatsapp', 'Cork Companies Partner on Green Energy')" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">WhatsApp</a>
+                                    <a href="#" onclick="copyLink()" class="block px-3 py-2 text-sm hover:bg-gray-100 rounded">Copy Link</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href="/news/cork-companies-green-energy.html" class="block group">
+                            <h2 class="text-xl font-bold mb-2 group-hover:text-blue-600 transition">
+                                GreenTech Cork and EnergyPlus Announce Strategic Partnership for Renewable Energy Solutions
+                            </h2>
+                            <p class="text-gray-600 mb-3 line-clamp-2">
+                                Two leading Cork-based companies join forces to deliver innovative green energy solutions to Irish businesses, targeting 50% reduction in carbon emissions for clients by 2027.
+                            </p>
+                        </a>
+
+                        <div class="flex items-center justify-between text-sm text-gray-500">
+                            <div class="flex items-center space-x-4">
+                                <span>GreenTech Cork</span>
+                                <span>CRO: 345678</span>
+                            </div>
+                            <span>2 days ago</span>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- Load More Button -->
+                <div class="text-center mt-8">
+                    <button onclick="loadMore()" class="bg-black text-white px-6 py-3 rounded-md font-medium hover:bg-gray-900">
+                        Load More Press Releases
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-20 py-8 border-t bg-white">
+        <div class="max-w-7xl mx-auto px-6 text-center text-sm text-gray-500">
+            <p>© 2025 PressWire.ie - Ireland's Domain-Verified Press Release Platform</p>
+            <p class="mt-2">Built with ❤️ for Irish businesses</p>
+        </div>
+    </footer>
+
+    <script>
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const cards = document.querySelectorAll('.pr-card');
+
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        updateCount();
+    });
+
+    // Filter functionality
+    function applyFilters() {
+        const industry = document.getElementById('industryFilter').value;
+        const type = document.getElementById('typeFilter').value;
+        const dateRange = document.getElementById('dateFilter').value;
+        const cards = document.querySelectorAll('.pr-card');
+
+        cards.forEach(card => {
+            let show = true;
+
+            if (industry && card.dataset.industry !== industry) show = false;
+            if (type && card.dataset.type !== type) show = false;
+            // Date filtering would need actual date comparison logic
+
+            card.style.display = show ? 'block' : 'none';
+        });
+        updateCount();
+    }
+
+    // Add event listeners to filters
+    document.getElementById('industryFilter').addEventListener('change', applyFilters);
+    document.getElementById('typeFilter').addEventListener('change', applyFilters);
+    document.getElementById('dateFilter').addEventListener('change', applyFilters);
+
+    // Sort functionality
+    document.getElementById('sortBy').addEventListener('change', function() {
+        const sortValue = this.value;
+        const container = document.getElementById('pr-list');
+        const cards = Array.from(container.querySelectorAll('.pr-card'));
+
+        cards.sort((a, b) => {
+            if (sortValue === 'latest') {
+                return new Date(b.dataset.date) - new Date(a.dataset.date);
+            } else if (sortValue === 'oldest') {
+                return new Date(a.dataset.date) - new Date(b.dataset.date);
+            } else if (sortValue === 'company') {
+                const companyA = a.querySelector('.text-gray-500').textContent;
+                const companyB = b.querySelector('.text-gray-500').textContent;
+                return companyA.localeCompare(companyB);
+            }
+        });
+
+        cards.forEach(card => container.appendChild(card));
+    });
+
+    // Reset filters
+    function resetFilters() {
+        document.getElementById('industryFilter').value = '';
+        document.getElementById('typeFilter').value = '';
+        document.getElementById('dateFilter').value = '';
+        document.getElementById('sortBy').value = 'latest';
+        document.getElementById('searchInput').value = '';
+
+        const cards = document.querySelectorAll('.pr-card');
+        cards.forEach(card => card.style.display = 'block');
+        updateCount();
+    }
+
+    // Update results count
+    function updateCount() {
+        const visibleCards = document.querySelectorAll('.pr-card:not([style*="display: none"])');
+        document.getElementById('prCount').textContent = visibleCards.length;
+    }
+
+    // Share functionality
+    function toggleShare(button) {
+        const dropdown = button.nextElementSibling;
+
+        // Close all other dropdowns
+        document.querySelectorAll('.share-dropdown').forEach(d => {
+            if (d !== dropdown) d.classList.remove('active');
+        });
+
+        dropdown.classList.toggle('active');
+    }
+
+    // Share on social media
+    function shareOn(platform, title) {
+        const url = window.location.href;
+        let shareUrl = '';
+
+        switch(platform) {
+            case 'twitter':
+                shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+                break;
+            case 'linkedin':
+                shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+                break;
+            case 'facebook':
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+                break;
+            case 'whatsapp':
+                shareUrl = `https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`;
+                break;
+        }
+
+        if (shareUrl) window.open(shareUrl, '_blank');
+        event.preventDefault();
+    }
+
+    // Copy link
+    function copyLink() {
+        navigator.clipboard.writeText(window.location.href);
+        alert('Link copied to clipboard!');
+        event.preventDefault();
+    }
+
+    // Load more (placeholder)
+    function loadMore() {
+        alert('More press releases would load here in production');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.relative')) {
+            document.querySelectorAll('.share-dropdown').forEach(d => {
+                d.classList.remove('active');
+            });
+        }
+    });
+    </script>
+</body>
+</html>
