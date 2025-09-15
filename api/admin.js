@@ -31,8 +31,16 @@ exports.handler = async (event, context) => {
 
         const token = authHeader.substring(7);
 
-        // Verify admin token (set in environment variables)
-        const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'admin-secret-2025-presswire';
+        // Verify admin token (must be set in environment variables)
+        const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
+
+        if (!ADMIN_TOKEN) {
+            return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({ error: 'Admin token not configured' })
+            };
+        }
 
         if (token !== ADMIN_TOKEN) {
             return {

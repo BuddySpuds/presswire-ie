@@ -39,3 +39,8 @@ pr/*.html
 # Temporary files
 *.tmp
 .cache/.env.backup
+
+# Environment variables
+.env
+.env.local
+.env.production
