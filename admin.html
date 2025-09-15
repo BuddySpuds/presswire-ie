@@ -92,6 +92,10 @@
                             class="px-6 py-4 text-sm font-medium text-gray-600 hover:text-black">
                             Free PR Generation
                         </button>
+                        <button onclick="showTab('manage')" id="tabManage"
+                            class="px-6 py-4 text-sm font-medium text-gray-600 hover:text-black">
+                            Manage All PRs
+                        </button>
                     </nav>
                 </div>
 
@@ -189,6 +193,53 @@
                         </a>
                     </div>
                 </div>
+
+                <!-- Manage PRs Tab -->
+                <div id="manageTab" class="hidden p-6">
+                    <h2 class="text-xl font-bold mb-6">Manage All Press Releases</h2>
+
+                    <div class="mb-6">
+                        <button onclick="loadAllPRs()"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                            Refresh PR List
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b bg-gray-50">
+                                    <th class="text-left py-3 px-4">Company</th>
+                                    <th class="text-left py-3 px-4">Headline</th>
+                                    <th class="text-left py-3 px-4">Published</th>
+                                    <th class="text-left py-3 px-4">Views</th>
+                                    <th class="text-left py-3 px-4">Status</th>
+                                    <th class="text-left py-3 px-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prsList">
+                                <tr>
+                                    <td colspan="6" class="text-center py-8 text-gray-500">
+                                        Click "Refresh PR List" to load press releases
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- PR Details Modal -->
+                    <div id="prModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                            <div class="flex justify-between items-start mb-4">
+                                <h3 class="text-xl font-bold">PR Details</h3>
+                                <button onclick="closePRModal()" class="text-gray-500 hover:text-black">✕</button>
+                            </div>
+                            <div id="prModalContent">
+                                <!-- PR details will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -256,6 +307,7 @@
         document.getElementById('generateTab').classList.add('hidden');
         document.getElementById('listTab').classList.add('hidden');
         document.getElementById('prTab').classList.add('hidden');
+        document.getElementById('manageTab').classList.add('hidden');
 
         // Remove active class from all tab buttons
         document.querySelectorAll('[id^="tab"]').forEach(btn => {
@@ -274,6 +326,8 @@
         // Load data for the tab
         if (tab === 'list') {
             loadTokens();
+        } else if (tab === 'manage') {
+            loadAllPRs();
         }
     }
 
@@ -415,6 +469,130 @@
         const token = document.getElementById('prTokenValue').textContent;
         navigator.clipboard.writeText(token);
         alert('PR token copied to clipboard!');
+    }
+
+    // PR Management Functions
+    async function loadAllPRs() {
+        try {
+            // Get analytics summary
+            const response = await fetch('/api/analytics', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'get-summary' })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                displayPRList(data.summary);
+            }
+        } catch (error) {
+            console.error('Failed to load PRs:', error);
+            // For demo, show sample data
+            displayPRList({
+                topPRs: [
+                    { slug: 'demo-pr-1', views: 156, uniqueVisitors: 89, lastView: new Date().toISOString() },
+                    { slug: 'demo-pr-2', views: 234, uniqueVisitors: 145, lastView: new Date().toISOString() }
+                ]
+            });
+        }
+    }
+
+    function displayPRList(summary) {
+        const tbody = document.getElementById('prsList');
+        const prs = summary.topPRs || [];
+
+        if (prs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">No press releases found</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = prs.map(pr => {
+            const company = pr.slug.split('-')[0] || 'Unknown';
+            const date = pr.lastView ? new Date(pr.lastView).toLocaleDateString() : 'N/A';
+
+            return `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="py-3 px-4">${company}</td>
+                    <td class="py-3 px-4">
+                        <div class="max-w-xs truncate">${pr.slug}</div>
+                    </td>
+                    <td class="py-3 px-4">${date}</td>
+                    <td class="py-3 px-4">${pr.views || 0}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Published</span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <button onclick="viewPRDetails('${pr.slug}')"
+                            class="text-blue-600 hover:text-blue-800 text-sm mr-2">
+                            View
+                        </button>
+                        <button onclick="editPRAsAdmin('${pr.slug}')"
+                            class="text-green-600 hover:text-green-800 text-sm mr-2">
+                            Edit
+                        </button>
+                        <button onclick="unpublishPR('${pr.slug}')"
+                            class="text-red-600 hover:text-red-800 text-sm">
+                            Unpublish
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function viewPRDetails(slug) {
+        // Show modal with PR details
+        const modal = document.getElementById('prModal');
+        const content = document.getElementById('prModalContent');
+
+        content.innerHTML = `
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Slug</label>
+                    <p class="mt-1">${slug}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">URL</label>
+                    <a href="https://presswire.ie/pr/${slug}.html" target="_blank"
+                        class="text-blue-600 hover:text-blue-800">
+                        https://presswire.ie/pr/${slug}.html
+                    </a>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Management Link</label>
+                    <p class="text-sm text-gray-600">Contact support for management link recovery</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="window.open('https://presswire.ie/pr/${slug}.html', '_blank')"
+                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        View PR
+                    </button>
+                    <button onclick="closePRModal()"
+                        class="border px-4 py-2 rounded hover:bg-gray-50">
+                        Close
+                    </button>
+                </div>
+            </div>
+        `;
+
+        modal.classList.remove('hidden');
+    }
+
+    function closePRModal() {
+        document.getElementById('prModal').classList.add('hidden');
+    }
+
+    function editPRAsAdmin(slug) {
+        // Generate admin token and redirect to management page
+        generateAdminPRToken();
+        alert(`Admin editing for ${slug} - use the generated token to access management page`);
+    }
+
+    function unpublishPR(slug) {
+        if (!confirm(`Are you sure you want to unpublish ${slug}?`)) return;
+
+        alert(`To unpublish ${slug}, use the management dashboard with admin token.`);
+        // In production, this would call the manage-pr API with admin privileges
     }
     </script>
 </body>
