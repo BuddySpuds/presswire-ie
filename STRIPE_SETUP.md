@@ -5,27 +5,31 @@ PressWire.ie uses Stripe Payment Links for processing payments. This guide expla
 
 ## Pricing Tiers
 
-### 1. Standard (€99)
-- Basic press release
+### 1. Single Press Release (Launch Special)
+- **€49** ~~€99~~ (50% OFF - Limited Time)
 - Domain verification
+- CRO verification
 - SEO-optimized backlinks
-- 24-hour editing window
+- 24-hour edit window
 - Analytics dashboard
 
-### 2. Professional (€149)
-- Everything in Standard
+### 2. Professional Bundle
+- **€349** for 10 press releases (Save €641!)
+- €34.90 per PR vs €99 single price
+- Everything in Single PR
+- Use within 12 months
 - Priority indexing
-- Extended distribution
-- 48-hour editing window
+- 48-hour edit window
 - Enhanced analytics
-
-### 3. Premium (€249)
-- Everything in Professional
-- Featured placement
-- Social media boost
-- 7-day editing window
-- Full analytics suite
 - Priority support
+
+### 3. Enterprise (Coming Soon)
+- Custom pricing for high-volume needs
+- Launching Q1 2026
+- Unlimited press releases
+- White-label options
+- API access
+- Dedicated account manager
 
 ## Setup Instructions
 
@@ -35,16 +39,16 @@ PressWire.ie uses Stripe Payment Links for processing payments. This guide expla
 2. Navigate to **Payment Links** (Product catalog → Payment links)
 3. Click **+ New payment link**
 
-### Step 2: Create Standard Tier Link
+### Step 2: Create Single PR Link (Launch Special)
 
 1. **Product details:**
-   - Name: `PressWire.ie - Standard Press Release`
-   - Description: `Domain-verified press release with SEO backlinks`
-   - Price: `€99.00`
+   - Name: `PressWire.ie - Single Press Release (Launch Special)`
+   - Description: `Domain-verified press release with SEO backlinks - 50% OFF`
+   - Price: `€49.00` (was €99.00)
    - Type: `One-time`
 
 2. **After payment settings:**
-   - Success URL: `https://presswire.ie/success?tier=standard`
+   - Success URL: `https://presswire.ie/success?tier=single`
    - Cancel URL: `https://presswire.ie/generate.html`
 
 3. **Advanced options:**
@@ -55,20 +59,21 @@ PressWire.ie uses Stripe Payment Links for processing payments. This guide expla
 4. **Metadata (important for tracking):**
    ```
    product_type: press_release
-   tier: standard
+   tier: single
    platform: presswire_ie
+   promo: launch_special
    ```
 
-### Step 3: Create Professional Tier Link
+### Step 3: Create Professional Bundle Link
 
 1. **Product details:**
-   - Name: `PressWire.ie - Professional Press Release`
-   - Description: `Priority press release with extended distribution`
-   - Price: `€149.00`
+   - Name: `PressWire.ie - Professional Bundle (10 PRs)`
+   - Description: `10 press releases - Save €641! Use within 12 months`
+   - Price: `€349.00`
    - Type: `One-time`
 
 2. **After payment settings:**
-   - Success URL: `https://presswire.ie/success?tier=professional`
+   - Success URL: `https://presswire.ie/success?tier=professional&bundle=10`
    - Cancel URL: `https://presswire.ie/generate.html`
 
 3. **Advanced options:**
@@ -78,34 +83,18 @@ PressWire.ie uses Stripe Payment Links for processing payments. This guide expla
 
 4. **Metadata:**
    ```
-   product_type: press_release
+   product_type: press_release_bundle
    tier: professional
+   bundle_size: 10
    platform: presswire_ie
    ```
 
-### Step 4: Create Premium Tier Link
+### Step 4: Enterprise (No Stripe Link Needed Yet)
 
-1. **Product details:**
-   - Name: `PressWire.ie - Premium Press Release`
-   - Description: `Featured press release with maximum visibility`
-   - Price: `€249.00`
-   - Type: `One-time`
-
-2. **After payment settings:**
-   - Success URL: `https://presswire.ie/success?tier=premium`
-   - Cancel URL: `https://presswire.ie/generate.html`
-
-3. **Advanced options:**
-   - Allow promotion codes: `Yes`
-   - Collect billing address: `Yes`
-   - Collect phone number: `Optional`
-
-4. **Metadata:**
-   ```
-   product_type: press_release
-   tier: premium
-   platform: presswire_ie
-   ```
+- Enterprise is "Coming Soon" - launches Q1 2026
+- Waitlist form collects leads for future outreach
+- No payment link needed at this time
+- Custom pricing will be handled separately when launched
 
 ## Step 5: Configure Discount Codes
 
@@ -141,9 +130,9 @@ Once created, add the payment link URLs to your `.env` file:
 
 ```env
 # Stripe Payment Links
-STRIPE_PAYMENT_LINK_STANDARD=https://buy.stripe.com/xxx_standard
-STRIPE_PAYMENT_LINK_PROFESSIONAL=https://buy.stripe.com/xxx_professional
-STRIPE_PAYMENT_LINK_PREMIUM=https://buy.stripe.com/xxx_premium
+STRIPE_PAYMENT_LINK_SINGLE=https://buy.stripe.com/xxx_single_49
+STRIPE_PAYMENT_LINK_PROFESSIONAL=https://buy.stripe.com/xxx_bundle_349
+# Enterprise - Coming Soon (no link yet)
 
 # Stripe API Keys (for webhook processing)
 STRIPE_PUBLISHABLE_KEY=pk_live_xxx
