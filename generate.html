@@ -787,8 +787,15 @@
             discountCode: appliedDiscount?.code || null
         };
 
-        // Store PR data in localStorage for retrieval after payment
-        localStorage.setItem('prDraft', JSON.stringify(prData));
+        // Create unique session ID for this PR submission
+        const sessionId = 'pr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+        // Store PR data in localStorage with session ID for retrieval after payment
+        localStorage.setItem(sessionId, JSON.stringify(prData));
+        localStorage.setItem('prDraft', JSON.stringify(prData)); // Keep for backwards compatibility
+
+        // Also store the current session ID so success page can retrieve it
+        localStorage.setItem('currentSessionId', sessionId);
 
         // Payment links - TEST MODE (update these with your actual Stripe payment links)
         // To create: Go to Stripe Dashboard > Payment Links > New
@@ -802,7 +809,7 @@
         const paymentUrl = new URL(paymentLinks[selectedPackage]);
 
         // Add client reference ID for tracking
-        paymentUrl.searchParams.append('client_reference_id', 'pr_' + Date.now());
+        paymentUrl.searchParams.append('client_reference_id', sessionId);
 
         // Add prefill email if available
         if (prData.email) {

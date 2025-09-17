@@ -15,7 +15,9 @@ exports.handler = async (event, context) => {
     }
 
     const sig = event.headers['stripe-signature'];
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    // Support both test and live webhook secrets
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET_TEST || process.env.STRIPE_WEBHOOK_SECRET;
 
     if (!webhookSecret) {
         console.error('STRIPE_WEBHOOK_SECRET not configured');
@@ -83,10 +85,15 @@ async function handleCheckoutComplete(session) {
         { expand: ['line_items', 'customer'] }
     );
 
-    // Extract metadata
+    // Extract metadata and customer details
     const metadata = fullSession.metadata || {};
     const customerEmail = fullSession.customer_details?.email;
-    const packageType = metadata.package_type;
+    const customerName = fullSession.customer_details?.name;
+    const packageType = metadata.package_type || 'starter';
+
+    // Try to get the client_reference_id which contains our session ID
+    const clientReferenceId = fullSession.client_reference_id;
+    console.log('Client reference ID:', clientReferenceId);
 
     // Determine credits based on package
     let credits = 1;
@@ -109,13 +116,33 @@ async function handleCheckoutComplete(session) {
 
     console.log('Payment record:', paymentRecord);
 
-    // If there's draft data in metadata, trigger PR generation
-    if (metadata.pr_draft) {
+    // Try to trigger PR generation
+    // Since payment links don't support metadata, we use the client_reference_id
+    if (clientReferenceId && clientReferenceId.startsWith('pr_')) {
+        try {
+            // Build basic PR data from what we have
+            const prData = {
+                sessionId: clientReferenceId,
+                stripeSessionId: session.id,
+                email: customerEmail,
+                name: customerName,
+                package: packageType,
+                amount: fullSession.amount_total,
+                currency: fullSession.currency
+            };
+
+            console.log('Triggering PR generation for session:', clientReferenceId);
+            await triggerPRGeneration(prData, customerEmail, session.id);
+        } catch (error) {
+            console.error('Error processing PR generation:', error);
+        }
+    } else if (metadata.pr_draft) {
+        // Fallback to metadata if available
         try {
             const prDraft = JSON.parse(metadata.pr_draft);
             await triggerPRGeneration(prDraft, customerEmail, session.id);
         } catch (error) {
-            console.error('Error processing PR draft:', error);
+            console.error('Error processing PR draft from metadata:', error);
         }
     }
 

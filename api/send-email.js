@@ -1,10 +1,31 @@
 // Email Sending API
 // Handles all email communications for PressWire.ie
 
-const nodemailer = require('nodemailer');
+let nodemailer;
+try {
+    nodemailer = require('nodemailer');
+} catch (error) {
+    console.error('Failed to load nodemailer:', error);
+    // Fallback for serverless environment
+    nodemailer = null;
+}
 
 // Email configuration based on provider
 const getTransporter = () => {
+    // Check if nodemailer is available
+    if (!nodemailer) {
+        console.error('Nodemailer not available, using mock transporter');
+        return {
+            sendMail: async (options) => {
+                console.log('=== EMAIL MOCK (nodemailer unavailable) ===');
+                console.log('To:', options.to);
+                console.log('Subject:', options.subject);
+                console.log('========================');
+                return { messageId: 'mock-' + Date.now() };
+            }
+        };
+    }
+
     // For development/testing - log emails to console
     if (!process.env.SMTP_HOST || process.env.NODE_ENV === 'development') {
         return {

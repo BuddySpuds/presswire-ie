@@ -119,8 +119,23 @@
         // Update payment ID
         document.getElementById('payment-id').textContent = sessionId.substring(0, 20) + '...';
 
-        // Retrieve saved form data
-        const prData = localStorage.getItem('prDraft');
+        // Try to get the session-specific data first
+        const currentSessionId = localStorage.getItem('currentSessionId');
+        let prData = null;
+
+        if (currentSessionId) {
+            // Try to get data for this specific session
+            prData = localStorage.getItem(currentSessionId);
+            if (prData) {
+                console.log('Using session-specific data:', currentSessionId);
+            }
+        }
+
+        // Fallback to general draft if no session data
+        if (!prData) {
+            prData = localStorage.getItem('prDraft');
+            console.log('Using general draft data');
+        }
 
         if (prData) {
             try {
