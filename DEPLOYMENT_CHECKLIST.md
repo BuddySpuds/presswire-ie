@@ -1,4 +1,5 @@
 # PressWire.ie Deployment Checklist
+*Last Updated: September 17, 2025*
 
 ## ✅ Completed Features
 
@@ -90,29 +91,30 @@
    SMTP_PASS=your-resend-api-key
    ```
 
-### 2. Email Addresses to Configure
-Create these email addresses in your email service:
-- `noreply@presswire.ie` - System notifications
-- `support@presswire.ie` - Customer support
-- `offers@presswire.ie` - Promotional emails
-- `contact@presswire.ie` - Contact form sender
-- `media@presswire.ie` - Media inquiries
-- `admin@presswire.ie` - Admin notifications
+### 2. Email Service Status ✓
+**Resend Configuration Complete:**
+- [x] Domain verified (presswire.ie)
+- [x] DKIM verified
+- [x] SPF/MX records configured
+- [x] API key added to Netlify
+- [x] All email templates working
 
-### 3. Stripe Payment Setup
-1. Create Stripe account at https://stripe.com
-2. Create three Payment Links:
-   - **Starter (€99)**: Basic PR distribution
-   - **Professional (€199)**: AI-enhanced + media list
-   - **Enterprise (€399)**: Priority placement + multimedia
-3. Configure webhook for payment confirmation
-4. Add Stripe environment variables:
+### 3. Stripe Payment Setup (90% Complete)
+**Completed:**
+- [x] Stripe MCP integration connected
+- [x] Webhook handler implemented
+- [x] Environment structure ready
+
+**Remaining Tasks:**
+1. Create three products in Stripe:
+   - **Basic (€99)**: Single PR
+   - **Professional (€199)**: 5 PRs bundle
+   - **Premium (€399)**: 10 PRs bundle
+2. Generate payment links for each
+3. Add to Netlify environment:
    ```
    STRIPE_SECRET_KEY=sk_live_...
    STRIPE_WEBHOOK_SECRET=whsec_...
-   STRIPE_STARTER_LINK=https://buy.stripe.com/...
-   STRIPE_PROFESSIONAL_LINK=https://buy.stripe.com/...
-   STRIPE_ENTERPRISE_LINK=https://buy.stripe.com/...
    ```
 
 ### 4. OpenRouter API Configuration
@@ -127,47 +129,27 @@ Set in Netlify environment variables:
 ADMIN_TOKEN=your-secure-admin-token-here
 ```
 
-### 6. GitHub Repository Setup
-1. Initialize git repository
-2. Add all files
-3. Commit with message:
-   ```bash
-   git add .
-   git commit -m "Initial PressWire.ie platform launch
+### 6. GitHub Repository Status ✓
+- [x] Repository: https://github.com/BuddySpuds/presswire-ie
+- [x] Connected to Netlify
+- [x] Auto-deploy enabled
+- [x] Main branch protected
 
-   Features:
-   - Domain-verified press releases
-   - SEO-optimized backlinks
-   - Smart categorization
-   - Discount system
-   - Email notifications
-   - Analytics dashboard
+### 7. Netlify Deployment Status ✓
+- [x] Site live at: https://presswire.ie
+- [x] Custom domain configured
+- [x] SSL certificate active
+- [x] Functions directory: `api`
+- [x] Auto-deploy from GitHub
+- [x] Environment variables configured
 
-   🤖 Generated with Claude Code
-
-   Co-Authored-By: Claude <noreply@anthropic.com>"
-   ```
-4. Push to GitHub:
-   ```bash
-   git push -u origin main
-   ```
-
-### 7. Netlify Deployment
-1. Connect GitHub repository to Netlify
-2. Configure build settings:
-   - Build command: (leave empty - static site)
-   - Publish directory: `.`
-   - Functions directory: `api`
-3. Add all environment variables listed above
-4. Deploy site
-5. Configure custom domain (presswire.ie)
-
-### 8. DNS Configuration
-Add these records to your domain:
-- A record: Point to Netlify's load balancer
-- CNAME: www -> presswire.ie
-- MX records: For email service
-- TXT records: For email authentication (SPF, DKIM, DMARC)
+### 8. DNS Configuration Status ✓
+- [x] A record: 75.2.60.5 (Netlify)
+- [x] CNAME: www -> presswire.ie
+- [x] MX: feedback-smtp.eu-west-1.amazonses.com
+- [x] SPF: v=spf1 include:amazonses.com ~all
+- [x] DKIM: Verified in Resend
+- [x] DMARC: v=DMARC1; p=none;
 
 ## 🧪 Testing Checklist
 

@@ -446,22 +446,23 @@
                     <h3 class="font-semibold">Select Distribution Package</h3>
 
                     <label class="block p-4 border rounded-lg cursor-pointer hover:border-black transition">
-                        <input type="radio" name="package" value="starter" checked class="mr-3">
-                        <span class="font-medium">Starter - €99</span>
-                        <span class="text-gray-500 text-sm ml-2">Basic distribution</span>
+                        <input type="radio" name="package" value="launch" checked class="mr-3">
+                        <span class="font-medium">Launch Special - €49</span>
+                        <span class="text-gray-500 text-sm ml-2">Single press release</span>
+                        <span class="bg-red-500 text-white text-xs px-2 py-1 rounded ml-2">50% OFF</span>
                     </label>
 
                     <label class="block p-4 border rounded-lg cursor-pointer hover:border-black transition">
-                        <input type="radio" name="package" value="professional" class="mr-3">
-                        <span class="font-medium">Professional - €199</span>
-                        <span class="text-gray-500 text-sm ml-2">AI-enhanced + media list</span>
-                        <span class="bg-green-500 text-white text-xs px-2 py-1 rounded ml-2">RECOMMENDED</span>
+                        <input type="radio" name="package" value="bundle" class="mr-3">
+                        <span class="font-medium">Bundle Pack - €349</span>
+                        <span class="text-gray-500 text-sm ml-2">10 press releases</span>
+                        <span class="bg-green-500 text-white text-xs px-2 py-1 rounded ml-2">BEST VALUE</span>
                     </label>
 
-                    <label class="block p-4 border rounded-lg cursor-pointer hover:border-black transition">
-                        <input type="radio" name="package" value="enterprise" class="mr-3">
-                        <span class="font-medium">Enterprise - €399</span>
-                        <span class="text-gray-500 text-sm ml-2">Priority placement + multimedia</span>
+                    <label class="block p-4 border rounded-lg cursor-pointer hover:border-black transition opacity-50">
+                        <input type="radio" name="package" value="enterprise" disabled class="mr-3">
+                        <span class="font-medium">Enterprise - Coming Soon</span>
+                        <span class="text-gray-500 text-sm ml-2">Custom solutions</span>
                     </label>
                 </div>
 
@@ -480,7 +481,7 @@
                     <div id="price-summary" class="mt-4 pt-4 border-t">
                         <div class="flex justify-between">
                             <span>Original Price:</span>
-                            <span id="original-price" class="font-medium">€99</span>
+                            <span id="original-price" class="font-medium">€49</span>
                         </div>
                         <div id="discount-row" class="flex justify-between text-green-600 hidden">
                             <span>Discount:</span>
@@ -488,7 +489,7 @@
                         </div>
                         <div class="flex justify-between text-lg font-bold mt-2 pt-2 border-t">
                             <span>Total:</span>
-                            <span id="final-price">€99</span>
+                            <span id="final-price">€49</span>
                         </div>
                     </div>
                 </div>
@@ -677,9 +678,9 @@
     function updatePriceDisplay() {
         const selectedPackage = document.querySelector('input[name="package"]:checked').value;
         const prices = {
-            starter: 99,
-            professional: 199,
-            enterprise: 399
+            launch: 49,
+            bundle: 349,
+            enterprise: 999 // Coming soon
         };
 
         const originalPrice = prices[selectedPackage];
@@ -749,9 +750,9 @@
     async function processPayment() {
         const selectedPackage = document.querySelector('input[name="package"]:checked').value;
         const prices = {
-            starter: 99,
-            professional: 199,
-            enterprise: 399
+            launch: 49,
+            bundle: 349,
+            enterprise: 999 // Coming soon
         };
 
         let finalPrice = prices[selectedPackage];
@@ -785,16 +786,40 @@
             discountCode: appliedDiscount?.code || null
         };
 
-        // Store in sessionStorage for success page
-        sessionStorage.setItem('prData', JSON.stringify(prData));
+        // Store PR data in localStorage for retrieval after payment
+        localStorage.setItem('prDraft', JSON.stringify(prData));
 
-        // In production, this would redirect to Stripe with metadata
-        alert(`Redirecting to payment for ${selectedPackage} package (€${finalPrice})...`);
+        // Payment links - TEST MODE (update these with your actual Stripe payment links)
+        // To create: Go to Stripe Dashboard > Payment Links > New
+        const paymentLinks = {
+            launch: 'https://buy.stripe.com/test_00g5kIdQMbZW4AE000', // €49 test link
+            bundle: 'https://buy.stripe.com/test_00g4gg4g69RO0ko8ww', // €349 test link
+            enterprise: '/contact.html' // Redirect to contact for custom quotes
+        };
 
-        // Simulate payment success
-        setTimeout(() => {
-            window.location.href = '/success.html?pr=demo-' + Date.now();
-        }, 2000);
+        // Build the payment URL with metadata
+        const paymentUrl = new URL(paymentLinks[selectedPackage]);
+
+        // Add client reference ID for tracking
+        paymentUrl.searchParams.append('client_reference_id', 'pr_' + Date.now());
+
+        // Add prefill email if available
+        if (prData.email) {
+            paymentUrl.searchParams.append('prefilled_email', prData.email);
+        }
+
+        // For production, redirect to Stripe Payment Link
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            window.location.href = paymentUrl.toString();
+        } else {
+            // For local testing, show alert and simulate success
+            alert(`In production, would redirect to: ${paymentUrl.toString()}\n\nPackage: ${selectedPackage} (€${finalPrice})`);
+
+            // Simulate payment success for testing
+            setTimeout(() => {
+                window.location.href = '/success.html?session_id=test_' + Date.now();
+            }, 2000);
+        }
     }
 
     function saveDraft() {

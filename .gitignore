@@ -40,6 +40,9 @@ pr/*.html
 *.tmp
 .cache/.env.backup
 
+# MCP configuration
+.mcp.json
+
 # Environment variables
 .env
 .env.local
