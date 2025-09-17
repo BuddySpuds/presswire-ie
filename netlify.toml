@@ -1,8 +1,8 @@
 [build]
   publish = "."
   functions = "api"
-  # Skip builds for PR commits to save credits
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- ':!news/' ':!pr/'"
+  # Only skip builds if ONLY news/ or pr/ directories changed
+  # ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- ':!news/' ':!pr/'"
 
 [functions]
   node_bundler = "esbuild"
