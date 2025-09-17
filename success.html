@@ -128,8 +128,10 @@
 
                 // Simulate PR generation (in production, this would call your API)
                 setTimeout(() => {
-                    // Create demo PR URL
-                    const prUrl = `/news/${data.companyName?.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.html`;
+                    // Create demo PR URL using either companyName or company field
+                    const companySlug = (data.companyName || data.company || data.croNumber || 'press-release')
+                        .toLowerCase().replace(/\s+/g, '-');
+                    const prUrl = `/news/${companySlug}-${Date.now()}.html`;
 
                     document.getElementById('pr-status').innerHTML = `
                         <div class="bg-green-50 border border-green-200 rounded-lg p-4">
