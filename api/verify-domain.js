@@ -2,7 +2,13 @@
 // Validates email domain ownership and sends verification codes
 
 const dns = require('dns').promises;
-const nodemailer = require('nodemailer');
+let nodemailer;
+try {
+    nodemailer = require('nodemailer');
+} catch (error) {
+    console.error('Failed to load nodemailer:', error);
+    nodemailer = null;
+}
 const crypto = require('crypto');
 
 // In-memory store for demo (use Redis/database in production)
@@ -124,8 +130,7 @@ async function sendVerificationCode(email, headers) {
 
     try {
         // Try to send the actual email
-        if (process.env.SMTP_HOST && process.env.SMTP_PASS) {
-            const nodemailer = require('nodemailer');
+        if (process.env.SMTP_HOST && process.env.SMTP_PASS && nodemailer) {
 
             const transporter = nodemailer.createTransport({
                 host: process.env.SMTP_HOST,
@@ -159,7 +164,11 @@ async function sendVerificationCode(email, headers) {
 
             console.log(`Email sent successfully to ${email}`);
         } else {
-            console.log('Email service not configured, returning demo code');
+            console.log('Email service not available:', {
+                smtp: !!process.env.SMTP_HOST,
+                pass: !!process.env.SMTP_PASS,
+                nodemailer: !!nodemailer
+            });
         }
     } catch (error) {
         console.error('Failed to send email:', error);
@@ -174,8 +183,8 @@ async function sendVerificationCode(email, headers) {
             message: 'Verification code sent',
             domain,
             isIrishDomain,
-            // Only include demo code in development or if email fails
-            ...((!process.env.SMTP_HOST || process.env.NODE_ENV === 'development') && { demoCode: code })
+            // Include demo code if email isn't working or in development
+            ...(((!process.env.SMTP_HOST || !nodemailer) || process.env.NODE_ENV === 'development') && { demoCode: code })
         })
     };
 }
