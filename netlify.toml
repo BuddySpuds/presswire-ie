@@ -1,6 +1,8 @@
 [build]
   publish = "."
   functions = "api"
+  # Skip builds for PR commits to save credits
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- ':!news/' ':!pr/'"
 
 [functions]
   node_bundler = "esbuild"
@@ -40,3 +42,5 @@
   # Tell Netlify's secret scanner to ignore these common env var values
   SECRETS_SCAN_OMIT_KEYS = "NODE_ENV,PORT"
   SECRETS_SCAN_ENABLED = "true"
+  # Skip builds when only PR files change
+  SKIP_PR_BUILDS = "true"

@@ -157,9 +157,9 @@
                         const filename = `${companySlug}-${Date.now()}.html`;
                         const prUrl = `/news/${filename}`;
 
-                        // Try to save via API
+                        // Try to save via API (using no-build version to save credits)
                         try {
-                            const response = await fetch('/api/save-pr', {
+                            const response = await fetch('/api/save-pr-no-build', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
