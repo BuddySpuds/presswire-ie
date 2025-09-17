@@ -88,74 +88,48 @@ async function handleCheckoutComplete(session) {
         );
         console.log('Full session retrieved successfully');
 
-    // Extract metadata and customer details
-    const metadata = fullSession.metadata || {};
-    const customerEmail = fullSession.customer_details?.email;
-    const customerName = fullSession.customer_details?.name;
-    const packageType = metadata.package_type || 'starter';
+        // Extract metadata and customer details
+        const metadata = fullSession.metadata || {};
+        const customerEmail = fullSession.customer_details?.email;
+        const customerName = fullSession.customer_details?.name;
+        const packageType = metadata.package_type || 'starter';
 
-    // Try to get the client_reference_id which contains our session ID
-    const clientReferenceId = fullSession.client_reference_id;
-    console.log('Client reference ID:', clientReferenceId);
+        // Try to get the client_reference_id which contains our session ID
+        const clientReferenceId = fullSession.client_reference_id;
+        console.log('Client reference ID:', clientReferenceId);
 
-    // Determine credits based on package
-    let credits = 1;
-    if (packageType === 'bundle_pack') {
-        credits = 10;
-    }
-
-    // Store payment record (in production, this would go to a database)
-    const paymentRecord = {
-        sessionId: session.id,
-        customerId: fullSession.customer,
-        email: customerEmail,
-        package: packageType,
-        credits: credits,
-        amount: fullSession.amount_total,
-        currency: fullSession.currency,
-        status: 'completed',
-        createdAt: new Date().toISOString()
-    };
-
-    console.log('Payment record:', paymentRecord);
-
-    // Try to trigger PR generation
-    // First check client_reference_id, then URL parameters, then metadata
-    console.log('Looking for PR data - clientReferenceId:', clientReferenceId);
-
-    let prProcessed = false;
-
-    if (clientReferenceId && clientReferenceId.startsWith('pr_')) {
-        try {
-            // Build basic PR data from what we have
-            const prData = {
-                sessionId: clientReferenceId,
-                stripeSessionId: session.id,
-                email: customerEmail,
-                name: customerName,
-                package: packageType,
-                amount: fullSession.amount_total,
-                currency: fullSession.currency
-            };
-
-            console.log('Triggering PR generation for session:', clientReferenceId);
-            await triggerPRGeneration(prData, customerEmail, session.id);
-            prProcessed = true;
-        } catch (error) {
-            console.error('Error processing PR generation:', error);
+        // Determine credits based on package
+        let credits = 1;
+        if (packageType === 'bundle_pack') {
+            credits = 10;
         }
-    }
 
-    // Fallback: Check URL parameters from success page redirect
-    if (!prProcessed && fullSession.success_url) {
-        const urlParams = new URL(fullSession.success_url).searchParams;
-        const sessionParam = urlParams.get('session_id');
-        console.log('Checking success URL for session:', sessionParam);
+        // Store payment record (in production, this would go to a database)
+        const paymentRecord = {
+            sessionId: session.id,
+            customerId: fullSession.customer,
+            email: customerEmail,
+            package: packageType,
+            credits: credits,
+            amount: fullSession.amount_total,
+            currency: fullSession.currency,
+            status: 'completed',
+            createdAt: new Date().toISOString()
+        };
 
-        if (sessionParam && sessionParam.startsWith('pr_')) {
+        console.log('Payment record:', paymentRecord);
+
+        // Try to trigger PR generation
+        // First check client_reference_id, then URL parameters, then metadata
+        console.log('Looking for PR data - clientReferenceId:', clientReferenceId);
+
+        let prProcessed = false;
+
+        if (clientReferenceId && clientReferenceId.startsWith('pr_')) {
             try {
+                // Build basic PR data from what we have
                 const prData = {
-                    sessionId: sessionParam,
+                    sessionId: clientReferenceId,
                     stripeSessionId: session.id,
                     email: customerEmail,
                     name: customerName,
@@ -164,27 +138,57 @@ async function handleCheckoutComplete(session) {
                     currency: fullSession.currency
                 };
 
-                console.log('Triggering PR from URL params:', sessionParam);
+                console.log('Triggering PR generation for session:', clientReferenceId);
                 await triggerPRGeneration(prData, customerEmail, session.id);
                 prProcessed = true;
             } catch (error) {
-                console.error('Error with URL param PR generation:', error);
+                console.error('Error processing PR generation:', error);
             }
         }
-    }
 
-    if (!prProcessed && metadata.pr_draft) {
-        // Fallback to metadata if available
-        try {
-            const prDraft = JSON.parse(metadata.pr_draft);
-            await triggerPRGeneration(prDraft, customerEmail, session.id);
-        } catch (error) {
-            console.error('Error processing PR draft from metadata:', error);
+        // Fallback: Check URL parameters from success page redirect
+        if (!prProcessed && fullSession.success_url) {
+            const urlParams = new URL(fullSession.success_url).searchParams;
+            const sessionParam = urlParams.get('session_id');
+            console.log('Checking success URL for session:', sessionParam);
+
+            if (sessionParam && sessionParam.startsWith('pr_')) {
+                try {
+                    const prData = {
+                        sessionId: sessionParam,
+                        stripeSessionId: session.id,
+                        email: customerEmail,
+                        name: customerName,
+                        package: packageType,
+                        amount: fullSession.amount_total,
+                        currency: fullSession.currency
+                    };
+
+                    console.log('Triggering PR from URL params:', sessionParam);
+                    await triggerPRGeneration(prData, customerEmail, session.id);
+                    prProcessed = true;
+                } catch (error) {
+                    console.error('Error with URL param PR generation:', error);
+                }
+            }
         }
-    }
 
-    // Send confirmation email
-    await sendConfirmationEmail(customerEmail, packageType, credits);
+        if (!prProcessed && metadata.pr_draft) {
+            // Fallback to metadata if available
+            try {
+                const prDraft = JSON.parse(metadata.pr_draft);
+                await triggerPRGeneration(prDraft, customerEmail, session.id);
+            } catch (error) {
+                console.error('Error processing PR draft from metadata:', error);
+            }
+        }
+
+        // Send confirmation email
+        await sendConfirmationEmail(customerEmail, packageType, credits);
+    } catch (error) {
+        console.error('Error handling checkout complete:', error);
+        throw error;
+    }
 }
 
 async function handlePaymentSuccess(paymentIntent) {
