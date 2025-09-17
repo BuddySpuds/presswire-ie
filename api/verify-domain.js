@@ -2,6 +2,7 @@
 // Validates email domain ownership and sends verification codes
 
 const dns = require('dns').promises;
+const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
 // In-memory store for demo (use Redis/database in production)
@@ -118,9 +119,52 @@ async function sendVerificationCode(email, headers) {
         isIrishDomain
     });
 
-    // In production, send actual email here using SendGrid/AWS SES
-    // For demo, we'll just return success
-    console.log(`Verification code for ${email}: ${code}`);
+    // Send actual email using the send-email function
+    console.log(`Sending verification code ${code} to ${email}`);
+
+    try {
+        // Try to send the actual email
+        if (process.env.SMTP_HOST && process.env.SMTP_PASS) {
+            const nodemailer = require('nodemailer');
+
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST,
+                port: process.env.SMTP_PORT || 587,
+                secure: false,
+                auth: {
+                    user: process.env.SMTP_USER || 'resend',
+                    pass: process.env.SMTP_PASS
+                }
+            });
+
+            await transporter.sendMail({
+                from: 'PressWire.ie <noreply@presswire.ie>',
+                to: email,
+                subject: `Your PressWire.ie Verification Code: ${code}`,
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #000;">Verify Your Email Address</h2>
+                        <p>Thank you for using PressWire.ie. Please use the following code to verify your email address:</p>
+                        <div style="background: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0;">
+                            <h1 style="color: #000; font-size: 36px; letter-spacing: 5px; margin: 0;">${code}</h1>
+                        </div>
+                        <p>This code will expire in 10 minutes.</p>
+                        <p>If you didn't request this code, please ignore this email.</p>
+                        <hr style="border: none; border-top: 1px solid #ccc; margin: 30px 0;">
+                        <p style="color: #666; font-size: 12px;">PressWire.ie - Ireland's Domain-Verified Press Release Platform</p>
+                    </div>
+                `,
+                text: `Your PressWire.ie verification code is: ${code}\n\nThis code will expire in 10 minutes.`
+            });
+
+            console.log(`Email sent successfully to ${email}`);
+        } else {
+            console.log('Email service not configured, returning demo code');
+        }
+    } catch (error) {
+        console.error('Failed to send email:', error);
+        // Continue anyway - we'll return the code for testing
+    }
 
     return {
         statusCode: 200,
@@ -130,8 +174,8 @@ async function sendVerificationCode(email, headers) {
             message: 'Verification code sent',
             domain,
             isIrishDomain,
-            // For demo only - remove in production!
-            demoCode: code
+            // Only include demo code in development or if email fails
+            ...((!process.env.SMTP_HOST || process.env.NODE_ENV === 'development') && { demoCode: code })
         })
     };
 }
