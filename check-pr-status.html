@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check PR Status</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow">
+        <h1 class="text-2xl font-bold mb-4">PR Generation Status Check</h1>
+
+        <div class="mb-6">
+            <h2 class="font-semibold mb-2">LocalStorage Data:</h2>
+            <pre id="localStorage" class="bg-gray-50 p-4 rounded overflow-auto text-xs"></pre>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="font-semibold mb-2">Recent PR Sessions:</h2>
+            <div id="sessions"></div>
+        </div>
+
+        <button onclick="checkWebhook()" class="bg-blue-600 text-white px-4 py-2 rounded">
+            Check Webhook Status
+        </button>
+
+        <div id="webhook-result" class="mt-4"></div>
+
+        <div class="mt-6">
+            <h2 class="font-semibold mb-2">Manual PR Generation:</h2>
+            <button onclick="generateManually()" class="bg-green-600 text-white px-4 py-2 rounded">
+                Generate PR Manually
+            </button>
+            <div id="manual-result" class="mt-4"></div>
+        </div>
+    </div>
+
+    <script>
+        // Display localStorage
+        const storage = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('pr_') || key === 'prDraft' || key === 'currentSessionId') {
+                try {
+                    storage[key] = JSON.parse(localStorage.getItem(key));
+                } catch {
+                    storage[key] = localStorage.getItem(key);
+                }
+            }
+        }
+        document.getElementById('localStorage').textContent = JSON.stringify(storage, null, 2);
+
+        // Show sessions
+        const sessionsDiv = document.getElementById('sessions');
+        Object.keys(storage).forEach(key => {
+            if (key.startsWith('pr_')) {
+                const div = document.createElement('div');
+                div.className = 'bg-gray-50 p-3 rounded mb-2';
+                div.innerHTML = `
+                    <p class="font-mono text-sm">${key}</p>
+                    <button onclick="useSession('${key}')" class="text-blue-600 text-sm">
+                        Use this session
+                    </button>
+                `;
+                sessionsDiv.appendChild(div);
+            }
+        });
+
+        async function checkWebhook() {
+            const result = document.getElementById('webhook-result');
+            result.innerHTML = '<p>Checking webhook...</p>';
+
+            try {
+                // This would need to call your API to check webhook status
+                result.innerHTML = `
+                    <div class="bg-yellow-50 p-4 rounded">
+                        <p>Webhook endpoint: https://presswire.ie/.netlify/functions/stripe-webhook</p>
+                        <p>Check Stripe Dashboard → Webhooks for delivery status</p>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `<p class="text-red-600">Error: ${error.message}</p>`;
+            }
+        }
+
+        function useSession(sessionId) {
+            localStorage.setItem('currentSessionId', sessionId);
+            alert('Session set. Go to success page to generate PR.');
+            window.location.href = '/success.html';
+        }
+
+        async function generateManually() {
+            const result = document.getElementById('manual-result');
+            const prData = localStorage.getItem('prDraft');
+
+            if (!prData) {
+                result.innerHTML = '<p class="text-red-600">No PR data found</p>';
+                return;
+            }
+
+            try {
+                const data = JSON.parse(prData);
+                const content = generatePRHTML(data);
+                const filename = `${(data.company || 'test').toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.html`;
+
+                result.innerHTML = '<p>Saving PR...</p>';
+
+                const response = await fetch('/api/save-pr-no-build', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: content,
+                        filename: filename,
+                        metadata: data
+                    })
+                });
+
+                const saveResult = await response.json();
+
+                if (response.ok) {
+                    result.innerHTML = `
+                        <div class="bg-green-50 p-4 rounded">
+                            <p class="text-green-700">PR saved successfully!</p>
+                            <a href="${saveResult.url}" class="text-blue-600">View PR</a>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `<p class="text-red-600">Save failed: ${saveResult.error}</p>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<p class="text-red-600">Error: ${error.message}</p>`;
+            }
+        }
+
+        function generatePRHTML(data) {
+            const date = new Date().toLocaleDateString('en-IE');
+            return `<!DOCTYPE html>
+<html><head><title>${data.company} PR</title></head>
+<body>
+<h1>${data.headline || data.prTitle || 'Press Release'}</h1>
+<p>Company: ${data.company || data.companyName}</p>
+<p>Date: ${date}</p>
+<div>${data.body || data.prContent || 'Content'}</div>
+</body></html>`;
+        }
+    </script>
+</body>
+</html>
