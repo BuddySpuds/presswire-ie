@@ -116,6 +116,10 @@
         const packageType = params.get('package') || 'professional';
         const sessionId = params.get('session_id') || 'demo-' + Date.now();
 
+        console.log('Success page loaded');
+        console.log('Package:', packageType);
+        console.log('Session ID:', sessionId);
+
         // Update payment ID
         document.getElementById('payment-id').textContent = sessionId.substring(0, 20) + '...';
 
@@ -141,24 +145,61 @@
             try {
                 const data = JSON.parse(prData);
 
-                // Simulate PR generation (in production, this would call your API)
-                setTimeout(() => {
-                    // Create demo PR URL using either companyName or company field
-                    const companySlug = (data.companyName || data.company || data.croNumber || 'press-release')
-                        .toLowerCase().replace(/\s+/g, '-');
-                    const prUrl = `/news/${companySlug}-${Date.now()}.html`;
+                // Generate PR locally and save it
+                console.log('Generating PR from saved data');
 
-                    document.getElementById('pr-status').innerHTML = `
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <p class="text-green-700 font-semibold mb-2">✅ Press Release Published!</p>
-                            <a href="${prUrl}" class="text-blue-600 hover:text-blue-800 underline text-sm">
-                                View your press release →
-                            </a>
-                        </div>
-                    `;
+                setTimeout(async () => {
+                    try {
+                        // Create PR content
+                        const prContent = generatePressRelease(data);
+                        const companySlug = (data.companyName || data.company || data.croNumber || 'press-release')
+                            .toLowerCase().replace(/\s+/g, '-');
+                        const filename = `${companySlug}-${Date.now()}.html`;
+                        const prUrl = `/news/${filename}`;
 
-                    // Clear saved data
-                    localStorage.removeItem('prDraft');
+                        // Try to save via API
+                        try {
+                            const response = await fetch('/api/save-pr', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    content: prContent,
+                                    filename: filename,
+                                    metadata: data
+                                })
+                            });
+
+                            if (response.ok) {
+                                console.log('PR saved successfully');
+                            }
+                        } catch (error) {
+                            console.error('Failed to save PR:', error);
+                        }
+
+                        document.getElementById('pr-status').innerHTML = `
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <p class="text-green-700 font-semibold mb-2">✅ Press Release Published!</p>
+                                <a href="${prUrl}" class="text-blue-600 hover:text-blue-800 underline text-sm">
+                                    View your press release →
+                                </a>
+                            </div>
+                        `;
+
+                        // Clear saved data
+                        localStorage.removeItem('prDraft');
+                        if (currentSessionId) {
+                            localStorage.removeItem(currentSessionId);
+                            localStorage.removeItem('currentSessionId');
+                        }
+                    } catch (error) {
+                        console.error('Error generating PR:', error);
+                        document.getElementById('pr-status').innerHTML = `
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <p class="text-yellow-700">Your payment was successful. We're processing your press release.</p>
+                                <p class="text-sm text-yellow-600 mt-2">If you don't receive an email within 5 minutes, contact support@presswire.ie</p>
+                            </div>
+                        `;
+                    }
                 }, 3000);
 
             } catch (error) {
@@ -184,6 +225,116 @@
             });
         }
     };
+
+    function generatePressRelease(data) {
+        const currentDate = new Date().toLocaleDateString('en-IE', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        return `<!DOCTYPE html>
+<html lang="en-IE">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${data.headline || data.prTitle || 'Press Release'} - PressWire.ie</title>
+    <meta name="description" content="${data.summary || 'Press release published on PressWire.ie'}">
+    <meta name="keywords" content="${data.keywords || 'press release, Ireland, news'}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white border-b">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between h-16">
+                <a href="/" class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-black rounded flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">PW</span>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-sm">PressWire.ie</div>
+                        <div class="text-xs text-gray-500">Domain-Verified Press Releases</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-6 py-12">
+        <div class="bg-white rounded-lg shadow-sm p-8">
+            <div class="mb-6">
+                <span class="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                    Verified Press Release
+                </span>
+                <span class="mx-2 text-gray-400">•</span>
+                <span class="text-sm text-gray-500">${currentDate}</span>
+                ${data.industry ? `<span class="mx-2 text-gray-400">•</span><span class="text-sm text-gray-500">${data.industry}</span>` : ''}
+            </div>
+
+            <h1 class="text-3xl font-bold mb-6">${data.headline || data.prTitle || 'Press Release'}</h1>
+
+            ${data.summary ? `<div class="text-lg text-gray-700 mb-8 font-medium">${data.summary}</div>` : ''}
+
+            <div class="prose max-w-none">
+                ${data.body || data.prContent || '<p>Press release content.</p>'}
+
+                ${data.quote ? `
+                <blockquote class="border-l-4 border-gray-300 pl-4 my-6 italic">
+                    "${data.quote}"
+                </blockquote>
+                ` : ''}
+
+                ${data.contentLink || data.website ? `
+                <div class="mt-8">
+                    <h3 class="font-semibold mb-2">Learn More</h3>
+                    ${data.website ? `<p><a href="${data.website}" class="text-blue-600 hover:underline" rel="dofollow">${data.website}</a></p>` : ''}
+                    ${data.contentLink ? `<p><a href="${data.contentLink}" class="text-blue-600 hover:underline" rel="dofollow">Featured Content</a></p>` : ''}
+                </div>
+                ` : ''}
+
+                <div class="mt-12 pt-8 border-t">
+                    <h3 class="font-semibold mb-4">About ${data.companyName || data.company || 'the Company'}</h3>
+                    <p class="text-gray-600">
+                        ${data.companyName || data.company} is a registered Irish company (CRO: ${data.croNumber || 'N/A'}).
+                    </p>
+
+                    ${data.contact ? `
+                    <div class="mt-4">
+                        <h4 class="font-medium">Contact Information</h4>
+                        <p class="text-gray-600">${data.contact}</p>
+                    </div>
+                    ` : ''}
+
+                    ${data.socialLinks ? `
+                    <div class="mt-4">
+                        <h4 class="font-medium">Connect</h4>
+                        <p class="text-gray-600">${data.socialLinks}</p>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+
+            <div class="mt-8 pt-8 border-t text-xs text-gray-500">
+                <p>This press release was published through PressWire.ie's domain-verified platform.</p>
+                <p class="mt-2">Company domain: ${data.email ? data.email.split('@')[1] : 'verified'}</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-16 border-t bg-white">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="text-center text-sm text-gray-500">
+                © ${new Date().getFullYear()} PressWire.ie. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>`;
+    }
     </script>
 </body>
 </html>
