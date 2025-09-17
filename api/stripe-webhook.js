@@ -46,6 +46,8 @@ exports.handler = async (event, context) => {
 
     // Handle the event
     try {
+        console.log(`Received webhook event: ${stripeEvent.type}`);
+
         switch (stripeEvent.type) {
             case 'checkout.session.completed':
                 await handleCheckoutComplete(stripeEvent.data.object);
@@ -57,6 +59,19 @@ exports.handler = async (event, context) => {
 
             case 'payment_intent.payment_failed':
                 await handlePaymentFailed(stripeEvent.data.object);
+                break;
+
+            case 'charge.succeeded':
+            case 'charge.updated':
+                // Handle charge events (from Payment Links)
+                console.log('Charge event received:', stripeEvent.type);
+                // Payment Links don't trigger checkout.session.completed
+                // So we need to handle charge events
+                if (stripeEvent.data.object.paid) {
+                    console.log('Payment successful via charge event');
+                    // Trigger PR generation based on charge metadata
+                    // This is a fallback for Payment Links
+                }
                 break;
 
             default:
