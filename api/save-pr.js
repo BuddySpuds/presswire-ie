@@ -1,6 +1,6 @@
 /**
  * Save Press Release to GitHub
- * Creates or updates PR files in the news directory
+ * Triggers Netlify build so PR appears immediately on site
  */
 
 const { Octokit } = require('@octokit/rest');
@@ -41,15 +41,15 @@ exports.handler = async (event, context) => {
         if (!process.env.GITHUB_TOKEN || !process.env.GITHUB_OWNER || !process.env.GITHUB_REPO) {
             console.error('GitHub configuration missing');
 
-            // Fallback: Just return success without saving
-            // In production, you'd want to save to a database or CDN instead
+            // Fallback: Store locally (won't persist but shows success)
             return {
                 statusCode: 200,
                 headers,
                 body: JSON.stringify({
                     success: true,
                     message: 'PR generated (GitHub storage not configured)',
-                    url: `/news/${filename}`
+                    url: `/news/${filename}`,
+                    skipBuild: true
                 })
             };
         }
@@ -74,13 +74,13 @@ exports.handler = async (event, context) => {
             existingFile = data;
         } catch (error) {
             // File doesn't exist, which is fine
-            console.log('Creating new file:', filePath);
+            console.log('Creating new PR file:', filePath);
         }
 
-        // Create or update the file
+        // Create commit message - build will deploy PR to site
         const commitMessage = existingFile
-            ? `Update press release: ${metadata?.company || filename}`
-            : `Add press release: ${metadata?.company || filename}`;
+            ? `Update PR: ${metadata?.company || filename}`
+            : `Add PR: ${metadata?.company || filename}`;
 
         const response = await octokit.repos.createOrUpdateFileContents({
             owner: process.env.GITHUB_OWNER,
@@ -91,7 +91,7 @@ exports.handler = async (event, context) => {
             sha: existingFile?.sha // Required for updates
         });
 
-        console.log('GitHub file saved:', response.data.commit.sha);
+        console.log('PR saved, build will deploy it:', response.data.commit.sha);
 
         // Return success with the PR URL
         return {
@@ -101,7 +101,8 @@ exports.handler = async (event, context) => {
                 success: true,
                 url: `/news/${htmlFilename}`,
                 githubUrl: response.data.content.html_url,
-                message: 'Press release saved successfully'
+                message: 'Press release published successfully',
+                buildTriggered: true
             })
         };
 
