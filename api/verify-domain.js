@@ -10,6 +10,7 @@ try {
     nodemailer = null;
 }
 const crypto = require('crypto');
+const { checkRateLimit, rateLimitResponse } = require('./middleware/rate-limit');
 
 // In-memory store for demo (use Redis/database in production)
 const verificationCodes = new Map();
@@ -23,11 +24,18 @@ const FREE_EMAIL_PROVIDERS = [
 ];
 
 exports.handler = async (event, context) => {
+    // Check rate limit first
+    const rateLimitCheck = checkRateLimit(event, 'verify-domain');
+    if (!rateLimitCheck.allowed) {
+        return rateLimitResponse(rateLimitCheck);
+    }
+
     // Enable CORS
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...rateLimitCheck.headers
     };
 
     if (event.httpMethod === 'OPTIONS') {
