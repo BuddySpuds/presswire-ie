@@ -168,10 +168,16 @@
             try {
                 const data = JSON.parse(prData);
 
-                // Generate PR locally and save it
-                console.log('Generating PR from saved data');
+                // Generate PR via API
+                console.log('Generating PR from saved data:', data);
+                console.log('Data contains:', {
+                    company: data.companyName || data.company,
+                    title: data.title || data.headline,
+                    email: data.email
+                });
 
                 setTimeout(async () => {
+                    console.log('Starting PR generation...');
                     try {
                         // Generate slug for the PR URL
                         const companySlug = (data.companyName || data.company || data.croNumber || 'press-release')
@@ -184,6 +190,7 @@
                             // Create a payment-verified token
                             const paymentToken = `payment-verified-${Date.now()}`;
 
+                            console.log('Calling API with token:', paymentToken);
                             const response = await fetch('/api/generate-pr', {
                                 method: 'POST',
                                 headers: {
