@@ -406,6 +406,37 @@ function createPRHTML(data) {
         day: 'numeric'
     });
 
+    // Generate keywords from headline and content
+    const keywords = [
+        'Irish Business',
+        company.name,
+        ...headline.split(' ').filter(w => w.length > 4).slice(0, 3),
+        'Press Release',
+        'Ireland'
+    ].join(', ');
+
+    // Determine category tags based on content
+    const categories = [];
+    const contentLower = (content + ' ' + headline).toLowerCase();
+    if (contentLower.includes('product') || contentLower.includes('launch')) {
+        categories.push('Product Launch');
+    }
+    if (contentLower.includes('funding') || contentLower.includes('investment') || contentLower.includes('series')) {
+        categories.push('Funding');
+    }
+    if (contentLower.includes('partnership') || contentLower.includes('collaboration')) {
+        categories.push('Partnership');
+    }
+    if (contentLower.includes('award') || contentLower.includes('recognition')) {
+        categories.push('Awards');
+    }
+    if (contentLower.includes('garden') || contentLower.includes('plant')) {
+        categories.push('Gardening');
+    }
+    if (categories.length === 0) {
+        categories.push('Company News');
+    }
+
     return `<!DOCTYPE html>
 <html lang="en-IE">
 <head>
@@ -413,27 +444,33 @@ function createPRHTML(data) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${headline} - ${company.name} | PressWire.ie</title>
     <meta name="description" content="${summary}">
+    <meta name="keywords" content="${keywords}">
+    <link rel="canonical" href="https://presswire.ie/news/${slug}.html">
+
+    <!-- Open Graph -->
     <meta property="og:title" content="${headline}">
     <meta property="og:description" content="${summary}">
     <meta property="og:url" content="https://presswire.ie/news/${slug}.html">
     <meta property="og:type" content="article">
-    <link rel="canonical" href="https://presswire.ie/news/${slug}.html">
+    <meta property="og:site_name" content="PressWire.ie">
+    <meta property="article:published_time" content="${new Date(publishedAt).toISOString()}">
+    <meta property="article:author" content="${company.name}">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${headline}">
+    <meta name="twitter:description" content="${summary}">
+    <meta name="twitter:site" content="@presswire_ie">
 
-    <style>
-        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    </style>
-
+    <!-- Schema.org -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "NewsArticle",
         "headline": "${headline}",
         "description": "${summary}",
-        "datePublished": "${publishedAt}",
-        "dateModified": "${publishedAt}",
+        "datePublished": "${new Date(publishedAt).toISOString()}",
+        "dateModified": "${new Date(publishedAt).toISOString()}",
         "author": {
             "@type": "Organization",
             "name": "${company.name}",
@@ -442,7 +479,11 @@ function createPRHTML(data) {
         "publisher": {
             "@type": "Organization",
             "name": "PressWire.ie",
-            "url": "https://presswire.ie"
+            "url": "https://presswire.ie",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://presswire.ie/logo.png"
+            }
         },
         "mainEntityOfPage": {
             "@type": "WebPage",
@@ -450,84 +491,163 @@ function createPRHTML(data) {
         }
     }
     </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .share-button {
+            transition: all 0.2s ease;
+        }
+        .share-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            .bg-white { box-shadow: none !important; }
+        }
+    </style>
 </head>
-<body class="bg-white">
-    <nav class="bg-white border-b">
+<body class="bg-gray-50">
+    <!-- Header -->
+    <nav class="bg-white border-b sticky top-0 z-10 no-print">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex items-center justify-between h-16">
                 <a href="/" class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-black rounded flex items-center justify-center">
+                    <div class="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
                         <span class="text-white font-bold text-sm">PW</span>
                     </div>
-                    <div>
-                        <div class="font-semibold text-sm">PressWire.ie</div>
-                        <div class="text-xs text-gray-500">Domain-Verified Press Releases</div>
-                    </div>
+                    <span class="font-semibold">PressWire.ie</span>
                 </a>
-                <a href="/" class="text-sm text-gray-600 hover:text-black">← All Press Releases</a>
+                <div class="flex items-center gap-4">
+                    <span class="text-xs text-green-600 font-medium">✓ Verified Press Release</span>
+                    <a href="/" class="text-sm text-gray-500 hover:text-gray-700">← Back</a>
+                </div>
             </div>
         </div>
     </nav>
 
+    <!-- Main Content -->
     <article class="max-w-4xl mx-auto px-6 py-12">
-        <div class="mb-8">
-            <div class="flex items-center gap-3 mb-4">
-                <span class="bg-green-500 text-white text-xs px-3 py-1 rounded-full font-semibold">VERIFIED</span>
-                <span class="text-sm text-gray-500">Published ${publishDate}</span>
-                <span class="text-sm text-gray-500">•</span>
-                <span class="text-sm text-gray-500">Verified via @${verifiedDomain}</span>
+        <div class="bg-white rounded-lg shadow-sm p-8">
+            <!-- Category Tags -->
+            <div class="flex flex-wrap gap-2 mb-6">
+                <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">✓ Verified</span>
+                ${categories.map(cat => `<span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">${cat}</span>`).join('')}
+                <span class="text-sm text-gray-500">${publishDate}</span>
             </div>
 
-            <h1 class="text-4xl font-bold mb-4">${headline}</h1>
+            <!-- Headline -->
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">${headline}</h1>
 
-            <div class="text-gray-600 mb-6">
-                <span>Dublin, Ireland</span> •
-                <span>CRO: ${company.croNumber}</span> •
-                <span>${company.name}</span>
+            <!-- Meta Information -->
+            <div class="flex flex-wrap gap-2 text-gray-600 mb-6">
+                <span>Dublin, Ireland</span>
+                <span>•</span>
+                <span>CRO: ${company.croNumber}</span>
+                <span>•</span>
+                <span class="font-medium">${company.name}</span>
+                <span>•</span>
+                <span>Verified via @${verifiedDomain}</span>
+            </div>
+
+            <!-- Share Buttons -->
+            <div class="flex flex-wrap gap-3 mb-8 no-print">
+                <button onclick="shareOnLinkedIn()" class="share-button px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                    Share on LinkedIn
+                </button>
+                <button onclick="shareOnTwitter()" class="share-button px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+                    Share on X
+                </button>
+                <button onclick="copyLink()" class="share-button px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span id="copyText">Copy Link</span>
+                </button>
+                <button onclick="window.print()" class="share-button px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Download PDF
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="prose prose-lg max-w-none">
+                <p class="lead text-xl text-gray-700 mb-6">${summary}</p>
+
+                <div class="text-gray-800 leading-relaxed">
+                    ${content}
+                </div>
+
+                <!-- About Company Section -->
+                <div class="mt-12 pt-8 border-t">
+                    <h3 class="font-semibold text-lg mb-3">About ${company.name}</h3>
+                    <p class="text-gray-600">${boilerplate}</p>
+                </div>
+
+                <!-- Contact Section -->
+                <div class="mt-8 pt-8 border-t">
+                    <h3 class="font-semibold text-lg mb-3">Contact Information</h3>
+                    <p class="text-gray-600">${data.contact || 'Contact information not provided'}</p>
+                </div>
             </div>
         </div>
 
-        <div class="prose prose-lg max-w-none">
-            <p class="lead text-xl text-gray-700 mb-6">${summary}</p>
-
-            ${content}
-
-            <div class="mt-12 pt-8 border-t">
-                <h3 class="font-semibold text-lg mb-3">About ${company.name}</h3>
-                <p class="text-gray-600">${boilerplate}</p>
+        <!-- Verification Badge -->
+        <div class="mt-8 p-6 bg-gray-50 rounded-lg">
+            <div class="flex items-center justify-center gap-2 text-sm text-gray-600">
+                <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <p>This press release was published on PressWire.ie with domain verification.</p>
             </div>
-
-            <div class="mt-8 pt-8 border-t">
-                <h3 class="font-semibold text-lg mb-3">Contact Information</h3>
-                <p class="text-gray-600">${data.contact}</p>
-            </div>
-        </div>
-
-        <div class="mt-12 p-6 bg-gray-50 rounded-lg">
-            <p class="text-sm text-gray-500 text-center">
-                This press release was published on PressWire.ie with domain verification.
-                Company identity verified via @${verifiedDomain} and CRO number ${company.croNumber}.
+            <p class="text-center text-sm text-gray-500 mt-2">
+                Company identity verified via @${verifiedDomain} and CRO number ${company.croNumber}
             </p>
         </div>
     </article>
 
-    <footer class="mt-20 py-8 border-t">
-        <div class="max-w-7xl mx-auto px-6 text-center text-sm text-gray-500">
-            <p>© 2025 PressWire.ie - Ireland's Domain-Verified Press Release Platform</p>
+    <!-- Footer -->
+    <footer class="mt-20 py-8 border-t no-print">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-sm text-gray-500 mb-2">© 2025 PressWire.ie - Ireland's Domain-Verified Press Release Platform</p>
+            <p class="text-xs text-gray-400">Building trust through verification</p>
         </div>
     </footer>
 
-    <!-- Analytics Tracking -->
+    <!-- Scripts -->
     <script>
+    // Share functions
+    function shareOnLinkedIn() {
+        const url = encodeURIComponent(window.location.href);
+        window.open(\`https://www.linkedin.com/sharing/share-offsite/?url=\${url}\`, '_blank', 'width=600,height=600');
+    }
+
+    function shareOnTwitter() {
+        const url = encodeURIComponent(window.location.href);
+        const text = encodeURIComponent('${headline} via @presswire_ie');
+        window.open(\`https://twitter.com/intent/tweet?url=\${url}&text=\${text}\`, '_blank', 'width=600,height=400');
+    }
+
+    function copyLink() {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            document.getElementById('copyText').textContent = 'Copied!';
+            setTimeout(() => {
+                document.getElementById('copyText').textContent = 'Copy Link';
+            }, 2000);
+        });
+    }
+
+    // Analytics tracking
     (function() {
-        // Generate or retrieve session ID
         let sessionId = localStorage.getItem('pw_session');
         if (!sessionId) {
             sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
             localStorage.setItem('pw_session', sessionId);
         }
 
-        // Track page view
         fetch('/api/analytics', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -537,7 +657,7 @@ function createPRHTML(data) {
                 sessionId: sessionId,
                 referrer: document.referrer || 'direct'
             })
-        }).catch(err => console.log('Analytics tracking failed:', err));
+        }).catch(() => {});
     })();
     </script>
 </body>
