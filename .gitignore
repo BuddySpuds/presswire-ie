@@ -36,6 +36,9 @@ docker-compose.override.yml
 pr/*.html
 !pr/index.html
 
+# Draft storage (temporary PR drafts before payment)
+drafts/
+
 # Temporary files
 *.tmp
 .cache/.env.backup

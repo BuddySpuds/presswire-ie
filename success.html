@@ -114,59 +114,71 @@
         // Get URL parameters
         const params = new URLSearchParams(window.location.search);
         const packageType = params.get('package') || 'professional';
+        const draftId = params.get('draft_id');
         const sessionId = params.get('session_id') || 'demo-' + Date.now();
 
         console.log('Success page loaded');
         console.log('Package:', packageType);
+        console.log('Draft ID:', draftId);
         console.log('Session ID:', sessionId);
 
         // Update payment ID
-        document.getElementById('payment-id').textContent = sessionId.substring(0, 20) + '...';
+        document.getElementById('payment-id').textContent = (draftId || sessionId).substring(0, 20) + '...';
 
         // Debug: Log all localStorage keys
         console.log('All localStorage keys:', Object.keys(localStorage));
-        console.log('Looking for session:', sessionId);
-
-        // Try multiple approaches to find PR data
-        const currentSessionId = localStorage.getItem('currentSessionId');
-        console.log('Stored currentSessionId:', currentSessionId);
 
         let prData = null;
 
-        // Method 1: Try the session ID from URL
-        prData = localStorage.getItem(sessionId);
-        if (prData) {
-            console.log('Found data using URL session ID');
-        }
-
-        // Method 2: Try the stored current session
-        if (!prData && currentSessionId) {
-            prData = localStorage.getItem(currentSessionId);
-            if (prData) {
-                console.log('Found data using stored session ID');
+        // Method 1: Try to retrieve from draft API (new method)
+        if (draftId && draftId.startsWith('draft_')) {
+            console.log('Retrieving draft from API with ID:', draftId);
+            try {
+                const draftResponse = await fetch(`/api/get-pr-draft?id=${draftId}`);
+                if (draftResponse.ok) {
+                    const draftResult = await draftResponse.json();
+                    prData = draftResult.draft;
+                    console.log('Retrieved PR data from API:', prData);
+                }
+            } catch (error) {
+                console.error('Failed to retrieve draft from API:', error);
             }
         }
 
-        // Method 3: Try the general draft
+        // Method 2: Try the session ID from URL (old method)
+        if (!prData && sessionId) {
+            const storedData = localStorage.getItem(sessionId);
+            if (storedData) {
+                prData = storedData;
+                console.log('Found data using URL session ID');
+            }
+        }
+
+        // Method 3: Try the stored current session
         if (!prData) {
-            prData = localStorage.getItem('prDraft');
-            if (prData) {
+            const currentSessionId = localStorage.getItem('currentSessionId');
+            if (currentSessionId) {
+                const storedData = localStorage.getItem(currentSessionId);
+                if (storedData) {
+                    prData = storedData;
+                    console.log('Found data using stored session ID');
+                }
+            }
+        }
+
+        // Method 4: Try the general draft
+        if (!prData) {
+            const generalDraft = localStorage.getItem('prDraft');
+            if (generalDraft) {
+                prData = generalDraft;
                 console.log('Found data using general draft');
-            }
-        }
-
-        // Method 4: Look for any draft_ prefixed keys
-        if (!prData) {
-            const draftKeys = Object.keys(localStorage).filter(k => k.startsWith('draft_'));
-            if (draftKeys.length > 0) {
-                console.log('Found draft keys:', draftKeys);
-                prData = localStorage.getItem(draftKeys[0]);
             }
         }
 
         if (prData) {
             try {
-                const data = JSON.parse(prData);
+                // prData might already be an object from API or a string from localStorage
+                const data = typeof prData === 'string' ? JSON.parse(prData) : prData;
 
                 // Generate PR via API
                 console.log('Generating PR from saved data:', data);

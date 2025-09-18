@@ -1,7 +1,9 @@
 /**
  * Store PR draft before payment
- * Returns a unique ID that can be passed through Stripe Payment Link
+ * Saves draft to GitHub and returns a unique ID that can be passed through Stripe Payment Link
  */
+
+const { Octokit } = require('@octokit/rest');
 
 exports.handler = async (event, context) => {
     // Enable CORS
@@ -29,15 +31,37 @@ exports.handler = async (event, context) => {
         // Generate unique draft ID
         const draftId = 'draft_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
-        // In production, store this in a database
-        // For MVP, we'll use environment variable or GitHub
-        // For now, we'll return the ID and rely on client-side storage
-
         console.log('Storing PR draft with ID:', draftId);
         console.log('PR data:', prData);
 
-        // Store in a way that webhook can retrieve
-        // This is a temporary solution - in production use a database
+        // Store draft to GitHub for retrieval after payment
+        if (process.env.GITHUB_TOKEN) {
+            try {
+                const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+
+                // Store as JSON file in drafts directory
+                const draftContent = JSON.stringify({
+                    id: draftId,
+                    createdAt: new Date().toISOString(),
+                    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+                    data: prData
+                }, null, 2);
+
+                await octokit.repos.createOrUpdateFileContents({
+                    owner: process.env.GITHUB_OWNER || 'BuddySpuds',
+                    repo: process.env.GITHUB_REPO || 'presswire-ie',
+                    path: `drafts/${draftId}.json`,
+                    message: `Store PR draft ${draftId}`,
+                    content: Buffer.from(draftContent).toString('base64'),
+                    branch: 'main'
+                });
+
+                console.log('Draft stored to GitHub successfully');
+            } catch (gitError) {
+                console.error('Failed to store to GitHub:', gitError);
+                // Continue anyway - draft ID can still be used
+            }
+        }
 
         return {
             statusCode: 200,

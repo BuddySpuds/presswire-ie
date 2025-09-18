@@ -842,49 +842,80 @@
         // Also store the current session ID so success page can retrieve it
         localStorage.setItem('currentSessionId', sessionId);
 
-        // Fetch payment links from API to use environment variables
-        let paymentLinks = {
-            launch: 'https://buy.stripe.com/test_bJedR81AZ6C05i65Todwc00', // Fallback
-            bundle: 'https://buy.stripe.com/test_bJedR81AZ6C05i65Todwc00', // Fallback
-            enterprise: '/contact.html' // Enterprise always goes to contact
-        };
-
-        // Try to fetch production payment links
+        // Store PR draft to server before payment
         try {
-            const response = await fetch('/api/get-payment-links');
-            if (response.ok) {
-                const data = await response.json();
-                paymentLinks = data.links || paymentLinks;
+            const draftResponse = await fetch('/api/store-pr-draft', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ...prData,
+                    sessionId: sessionId,
+                    package: selectedPackage,
+                    price: finalPrice
+                })
+            });
+
+            if (!draftResponse.ok) {
+                throw new Error('Failed to store draft');
+            }
+
+            const draftResult = await draftResponse.json();
+            const draftId = draftResult.draftId;
+            console.log('Draft stored with ID:', draftId);
+
+            // Store draft ID for reference
+            localStorage.setItem('currentDraftId', draftId);
+
+            // Fetch payment links from API to use environment variables
+            let paymentLinks = {
+                launch: 'https://buy.stripe.com/test_bJedR81AZ6C05i65Todwc00', // Fallback
+                bundle: 'https://buy.stripe.com/test_bJedR81AZ6C05i65Todwc00', // Fallback
+                enterprise: '/contact.html' // Enterprise always goes to contact
+            };
+
+            // Try to fetch production payment links
+            try {
+                const response = await fetch('/api/get-payment-links');
+                if (response.ok) {
+                    const data = await response.json();
+                    paymentLinks = data.links || paymentLinks;
+                }
+            } catch (error) {
+                console.log('Using fallback payment links');
+            }
+
+            // Build the payment URL with draft ID
+            const paymentUrl = new URL(paymentLinks[selectedPackage]);
+
+            // Add draft ID as client reference ID for webhook tracking
+            paymentUrl.searchParams.append('client_reference_id', draftId);
+
+            // Add prefill email if available
+            if (prData.email) {
+                paymentUrl.searchParams.append('prefilled_email', prData.email);
+            }
+
+            // Note: Discount codes are handled by Stripe at checkout
+            // We no longer bypass payment - Stripe handles all discounts including 100% off
+
+            // For production with payment required, redirect to Stripe Payment Link
+            if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                window.location.href = paymentUrl.toString();
+            } else {
+                // For local testing, show alert and simulate success
+                alert(`In production, would redirect to: ${paymentUrl.toString()}\n\nPackage: ${selectedPackage} (€${finalPrice})`);
+
+                // Simulate payment success for testing
+                setTimeout(() => {
+                    window.location.href = `/success.html?draft_id=${draftId}`;
+                }, 2000);
             }
         } catch (error) {
-            console.log('Using fallback payment links');
-        }
-
-        // Build the payment URL with metadata
-        const paymentUrl = new URL(paymentLinks[selectedPackage]);
-
-        // Add client reference ID for tracking
-        paymentUrl.searchParams.append('client_reference_id', sessionId);
-
-        // Add prefill email if available
-        if (prData.email) {
-            paymentUrl.searchParams.append('prefilled_email', prData.email);
-        }
-
-        // Note: Discount codes are handled by Stripe at checkout
-        // We no longer bypass payment - Stripe handles all discounts including 100% off
-
-        // For production with payment required, redirect to Stripe Payment Link
-        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-            window.location.href = paymentUrl.toString();
-        } else {
-            // For local testing, show alert and simulate success
-            alert(`In production, would redirect to: ${paymentUrl.toString()}\n\nPackage: ${selectedPackage} (€${finalPrice})`);
-
-            // Simulate payment success for testing
-            setTimeout(() => {
-                window.location.href = '/success.html?session_id=test_' + Date.now();
-            }, 2000);
+            console.error('Error storing draft:', error);
+            messageDiv.innerHTML = '<div class="bg-red-50 text-red-600 p-3 rounded">Error: Failed to process submission. Please try again.</div>';
+            return;
         }
     }
 

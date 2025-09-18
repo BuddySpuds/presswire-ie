@@ -109,7 +109,7 @@ async function handleCheckoutComplete(session) {
         const customerName = fullSession.customer_details?.name;
         const packageType = metadata.package_type || 'starter';
 
-        // Try to get the client_reference_id which contains our session ID
+        // Try to get the client_reference_id which contains our draft ID
         const clientReferenceId = fullSession.client_reference_id;
         console.log('Client reference ID:', clientReferenceId);
 
@@ -140,7 +140,37 @@ async function handleCheckoutComplete(session) {
 
         let prProcessed = false;
 
-        if (clientReferenceId && clientReferenceId.startsWith('pr_')) {
+        // Check if it's a draft ID
+        if (clientReferenceId && clientReferenceId.startsWith('draft_')) {
+            try {
+                console.log('Retrieving draft with ID:', clientReferenceId);
+
+                // Retrieve draft from storage
+                const draftResponse = await fetch(`${process.env.URL || 'https://presswire.ie'}/api/get-pr-draft?id=${clientReferenceId}`);
+
+                if (draftResponse.ok) {
+                    const draftData = await draftResponse.json();
+                    const prData = draftData.draft;
+
+                    // Add payment information
+                    prData.stripeSessionId = session.id;
+                    prData.paymentAmount = fullSession.amount_total;
+                    prData.currency = fullSession.currency;
+
+                    console.log('Draft retrieved, triggering PR generation');
+                    await triggerPRGeneration(prData, customerEmail, session.id);
+                    prProcessed = true;
+
+                    // Clean up draft after successful processing
+                    // Note: In production, mark as used rather than delete
+                } else {
+                    console.error('Failed to retrieve draft');
+                }
+            } catch (error) {
+                console.error('Error retrieving draft:', error);
+            }
+        } else if (clientReferenceId && clientReferenceId.startsWith('pr_')) {
+            // Fallback for old format
             try {
                 // Build basic PR data from what we have
                 const prData = {
@@ -259,14 +289,88 @@ function generatePRHTML(prData) {
         day: 'numeric'
     });
 
+    // Build key points HTML if available
+    let keyPointsHTML = '';
+    if (prData.keypoints) {
+        const points = prData.keypoints.split('\n').filter(p => p.trim());
+        if (points.length > 0) {
+            keyPointsHTML = `
+                <h2 class="text-xl font-semibold mb-3 mt-6">Key Points</h2>
+                <ul class="list-disc list-inside space-y-2 text-gray-700">
+                    ${points.map(point => `<li>${point.trim()}</li>`).join('')}
+                </ul>
+            `;
+        }
+    }
+
+    // Build quote HTML if available
+    let quoteHTML = '';
+    if (prData.quote) {
+        quoteHTML = `
+            <blockquote class="border-l-4 border-green-500 pl-4 italic text-gray-700 my-6">
+                "${prData.quote}"
+            </blockquote>
+        `;
+    }
+
+    // Build backlinks section if website provided
+    let backlinksHTML = '';
+    if (prData.website) {
+        backlinksHTML = `
+            <div class="mt-8 pt-8 border-t">
+                <p class="text-gray-700 mb-2">
+                    For more information, visit <a href="${prData.website}" rel="dofollow" class="text-green-600 underline hover:text-green-700">${prData.companyName || 'our website'}</a>.
+                </p>
+            </div>
+        `;
+    }
+
+    // Build social links if provided
+    let socialHTML = '';
+    if (prData.socialLinks) {
+        socialHTML = `
+            <div class="mt-4">
+                <p class="text-sm text-gray-600">
+                    Follow us: ${prData.socialLinks}
+                </p>
+            </div>
+        `;
+    }
+
     return `<!DOCTYPE html>
 <html lang="en-IE">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${prData.name || 'Company'} Press Release - PressWire.ie</title>
-    <meta name="description" content="Press release from ${prData.name || 'Company'} published on PressWire.ie">
+    <title>${prData.headline || prData.companyName + ' Press Release'} - PressWire.ie</title>
+    <meta name="description" content="${prData.summary || 'Press release from ' + prData.companyName + ' published on PressWire.ie'}">
+    <meta name="keywords" content="${prData.keywords || 'press release, Ireland, ' + prData.companyName}">
+
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="${prData.headline || prData.companyName + ' Press Release'}">
+    <meta property="og:description" content="${prData.summary || 'Latest press release from ' + prData.companyName}">
+    <meta property="og:type" content="article">
+    <meta property="article:published_time" content="${new Date().toISOString()}">
+
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Schema.org markup -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        "headline": "${(prData.headline || '').replace(/"/g, '\\"')}",
+        "datePublished": "${new Date().toISOString()}",
+        "author": {
+            "@type": "Organization",
+            "name": "${(prData.companyName || '').replace(/"/g, '\\"')}"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "PressWire.ie"
+        }
+    }
+    </script>
 </head>
 <body class="bg-gray-50">
     <div class="max-w-4xl mx-auto px-6 py-12">
@@ -275,25 +379,35 @@ function generatePRHTML(prData) {
                 <span class="text-sm text-gray-500">Press Release</span>
                 <span class="mx-2 text-gray-400">•</span>
                 <span class="text-sm text-gray-500">${currentDate}</span>
+                ${prData.industry ? `<span class="mx-2 text-gray-400">•</span>
+                <span class="text-sm text-gray-500">${prData.industry}</span>` : ''}
             </div>
 
-            <h1 className="text-3xl font-bold mb-6">${prData.name || 'Company'} Announcement</h1>
+            <h1 class="text-3xl font-bold mb-6">${prData.headline || prData.companyName + ' Announcement'}</h1>
 
             <div class="prose max-w-none">
-                <p class="text-lg text-gray-700 mb-4">
-                    ${prData.name || 'Company'} today announced a significant development.
+                <p class="text-lg text-gray-700 mb-4 font-medium">
+                    ${prData.summary || prData.companyName + ' today announced a significant development.'}
                 </p>
 
-                <p class="text-gray-600 mb-4">
-                    This press release was generated through PressWire.ie, Ireland's domain-verified
-                    press release platform.
-                </p>
+                ${keyPointsHTML}
+                ${quoteHTML}
+
+                ${backlinksHTML}
 
                 <div class="mt-8 pt-8 border-t">
-                    <p class="text-sm text-gray-500">
-                        Contact: ${prData.email}<br>
-                        Transaction ID: ${prData.stripeSessionId}
+                    <h3 class="font-semibold mb-2">Contact Information</h3>
+                    <p class="text-sm text-gray-600">
+                        ${prData.contact || prData.companyEmail || 'Contact information not provided'}<br>
+                        ${prData.companyName}<br>
+                        ${prData.croNumber ? `CRO Number: ${prData.croNumber}<br>` : ''}
+                        ${prData.companyEmail}
                     </p>
+                    ${socialHTML}
+                </div>
+
+                <div class="mt-4 text-xs text-gray-400">
+                    <p>Published via PressWire.ie • Domain Verified • Transaction ID: ${prData.stripeSessionId || 'N/A'}</p>
                 </div>
             </div>
         </div>
