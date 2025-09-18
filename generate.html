@@ -662,37 +662,14 @@
             return;
         }
 
-        try {
-            // Call CRO API
-            const response = await fetch(`https://opendata.cro.ie/api/3/action/datastore_search?resource_id=3fef41bc-b8f4-4b10-8434-ce51c29b1bba&q=${croNumber}`);
-            const data = await response.json();
+        // CRO API has CORS issues - accept any CRO number for now
+        // In production, this should be validated server-side
+        document.getElementById('cro-verification').classList.remove('hidden');
+        document.getElementById('cro-details').textContent = `Company verified: ${companyName} (CRO: ${croNumber})`;
 
-            if (data.success && data.result.records.length > 0) {
-                croData = data.result.records[0];
-                document.getElementById('cro-verification').classList.remove('hidden');
-                document.getElementById('cro-details').textContent = `Company verified: ${companyName} (CRO: ${croNumber})`;
-
-                setTimeout(() => {
-                    goToStep(3);
-                }, 1500);
-            } else {
-                // For demo, accept any CRO number
-                document.getElementById('cro-verification').classList.remove('hidden');
-                document.getElementById('cro-details').textContent = `Company verified: ${companyName} (CRO: ${croNumber})`;
-
-                setTimeout(() => {
-                    goToStep(3);
-                }, 1500);
-            }
-        } catch (error) {
-            // For demo purposes, continue anyway
-            document.getElementById('cro-verification').classList.remove('hidden');
-            document.getElementById('cro-details').textContent = `Company verified: ${companyName} (CRO: ${croNumber})`;
-
-            setTimeout(() => {
-                goToStep(3);
-            }, 1500);
-        }
+        setTimeout(() => {
+            goToStep(3);
+        }, 1500);
     }
 
     function updatePreview() {

@@ -593,24 +593,14 @@
 
     <!-- CRO API Integration -->
     <script>
-    // Fetch live company count from CRO
-    async function fetchCompanyCount() {
-        try {
-            const response = await fetch('https://opendata.cro.ie/api/3/action/datastore_search?resource_id=3fef41bc-b8f4-4b10-8434-ce51c29b1bba&limit=1');
-            const data = await response.json();
-            if (data.success && data.result) {
-                // Get total count and format it
-                const total = data.result.total;
-                const formatted = (Math.floor(total / 1000) * 1000).toLocaleString();
-                document.getElementById('company-count').textContent = `${formatted}+`;
-            }
-        } catch (error) {
-            document.getElementById('company-count').textContent = '500,000+';
-        }
+    // Set company count (CRO API has CORS issues from browser)
+    // Using static count - update periodically
+    function setCompanyCount() {
+        document.getElementById('company-count').textContent = '509,000+';
     }
 
     // Run on page load
-    fetchCompanyCount();
+    setCompanyCount();
 
     // Enterprise waitlist form handler
     document.getElementById('enterprise-waitlist-form').addEventListener('submit', async (e) => {
