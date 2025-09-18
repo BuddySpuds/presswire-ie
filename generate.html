@@ -776,19 +776,8 @@
             return;
         }
 
-        // TEST MODE: Special test discount codes
-        if (code === 'TEST100' || code === 'TESTPR') {
-            appliedDiscount = { discountPercent: 100 };
-            messageDiv.textContent = '100% TEST discount applied!';
-            messageDiv.className = 'mt-2 text-sm text-green-600';
-            messageDiv.classList.remove('hidden');
-            updatePriceDisplay();
-            localStorage.setItem('testMode', 'true');
-            // Disable the discount input after successful application
-            document.getElementById('discount-code').disabled = true;
-            document.querySelector('button[onclick="applyDiscount()"]').disabled = true;
-            return;
-        }
+        // Production mode - only real Stripe promo codes accepted
+        // Test codes removed for security
 
         try {
             // Call admin API to validate discount code
