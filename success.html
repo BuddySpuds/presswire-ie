@@ -173,12 +173,11 @@
 
                 setTimeout(async () => {
                     try {
-                        // Create PR content
-                        const prContent = generatePressRelease(data);
+                        // Generate slug for the PR URL
                         const companySlug = (data.companyName || data.company || data.croNumber || 'press-release')
                             .toLowerCase().replace(/\s+/g, '-');
-                        const filename = `${companySlug}-${Date.now()}.html`;
-                        const prUrl = `/news/${filename}`;
+                        const filename = `${companySlug}-${Date.now()}`;
+                        let prUrl = `/news/${filename}.html`;
 
                         // Call generate-pr API to properly generate and save the PR
                         try {
@@ -355,7 +354,8 @@
         return formatted || '<p>Press release content.</p>';
     }
 
-    function generatePressRelease(data) {
+    // DEPRECATED: This function is no longer used - PR generation happens via API
+    function generatePressRelease_DEPRECATED(data) {
         const currentDate = new Date().toLocaleDateString('en-IE', {
             year: 'numeric',
             month: 'long',
@@ -530,8 +530,8 @@ function downloadPDF() {
 }
 </style>
 
-<\/body>
-<\/html>`;
+</body>
+</html>`;
     }
 
     // Test PR generator for when data is missing
@@ -549,17 +549,28 @@ function downloadPDF() {
         };
 
         try {
-            const prContent = generatePressRelease(testData);
-            const filename = `test-pr-${Date.now()}.html`;
+            const filename = `test-pr-${Date.now()}`;
 
-            // Save via API
-            const response = await fetch('/api/save-pr', {
+            // Generate via API with test data
+            const paymentToken = `payment-verified-${Date.now()}`;
+            const response = await fetch('/api/generate-pr', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${paymentToken}`
+                },
                 body: JSON.stringify({
-                    content: prContent,
-                    filename: filename,
-                    metadata: testData
+                    company: {
+                        name: testData.companyName,
+                        croNumber: testData.croNumber,
+                        status: 'Active'
+                    },
+                    headline: testData.headline,
+                    summary: testData.summary,
+                    keyPoints: testData.body,
+                    contact: testData.contact,
+                    email: testData.email,
+                    package: 'starter'
                 })
             });
 
