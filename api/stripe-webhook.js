@@ -260,13 +260,27 @@ async function triggerPRGeneration(prDraft, email, sessionId) {
         // Generate a simple PR HTML
         const prHtml = generatePRHTML(prDraft);
 
-        // Generate filename
-        const timestamp = Date.now();
-        const companySlug = (prDraft.name || prDraft.company || 'press-release')
+        // Generate SEO-friendly filename
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+
+        // Create slug from headline or company name
+        const headlineSlug = (prDraft.headline || prDraft.title || 'announcement')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '')
+            .slice(0, 60); // Limit length
+
+        const companySlug = (prDraft.companyName || prDraft.company || 'company')
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-|-$/g, '');
-        const filename = `${companySlug}-${timestamp}.html`;
+
+        // Format: company-headline-YYYYMM.html
+        // Falls back to timestamp if needed for uniqueness
+        const timestamp = Date.now();
+        const filename = `${companySlug}-${headlineSlug}-${year}${month}.html`;
 
         // Save the PR
         await savePRToGitHub(prHtml, filename, prDraft);
