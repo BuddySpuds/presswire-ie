@@ -128,6 +128,20 @@ exports.handler = async (event, context) => {
         if (process.env.GITHUB_TOKEN) {
             await saveToGitHub(slug, htmlContent);
             await savePRData(prData);
+
+            // Send email notification after PR is saved
+            try {
+                await sendEmailNotification({
+                    email: tokenData.email,
+                    prUrl: `/news/${slug}.html`,
+                    headline: enhancedPR.headline,
+                    company: company.name
+                });
+                console.log(`Email notification sent to ${tokenData.email}`);
+            } catch (emailError) {
+                console.error('Failed to send email notification:', emailError);
+                // Don't fail the whole request if email fails
+            }
         }
 
         // Generate management URL
@@ -522,4 +536,34 @@ async function savePRData(prData) {
     savePR(prData);
 
     console.log(`PR data saved with management token for ${prData.slug}`);
+}
+
+async function sendEmailNotification(data) {
+    const { email, prUrl, headline, company } = data;
+
+    try {
+        const fetch = require('node-fetch');
+        const response = await fetch('https://presswire.ie/api/send-pr-notification', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email,
+                prUrl,
+                headline,
+                company
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(`Email API error: ${error}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Email notification error:', error);
+        throw error;
+    }
 }
