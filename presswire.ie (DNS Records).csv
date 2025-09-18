@@ -1,0 +1,8 @@
+name,ttl,type,value
+"presswire.ie","3600","NETLIFY","majestic-cactus-4e1f49.netlify.app"
+"www.presswire.ie","3600","NETLIFY","majestic-cactus-4e1f49.netlify.app"
+"presswire.ie","3600","A","75.2.60.5"
+"presswire.ie","3600","MX","feedback-smtp.eu-west-1.amazonses.com"
+"presswire.ie","3600","TXT","v=spf1 include:amazonses.com ~all"
+"_dmarc.presswire.ie","3600","TXT","v=DMARC1; p=none;"
+"resend._domainkey.presswire.ie","3600","TXT","p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDrLKeJQVeC4ap+V4ippz4ybOVPMhjdnh3VaxiApbSEtk0fcogO5EIhRC8q3Kouv6ZeWYIblw+oACYt77/xJ6yQQNGRlbLnlprMlOMbl0IXqYZty8pyrfDxm9p1i/ceUHM41FVaJHUyJ8lvArwiQRQUYF+Jf1v8jj3GnYmZlKH6IwIDAQAB"

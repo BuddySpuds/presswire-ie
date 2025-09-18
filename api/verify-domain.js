@@ -143,7 +143,7 @@ async function sendVerificationCode(email, headers) {
             });
 
             await transporter.sendMail({
-                from: 'noreply@presswire.ie',
+                from: 'PressWire.ie <noreply@presswire.ie>',
                 to: email,
                 subject: `Your PressWire.ie Verification Code: ${code}`,
                 html: `
