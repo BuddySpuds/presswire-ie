@@ -780,12 +780,11 @@
         // Test codes removed for security
 
         try {
-            // Call admin API to validate discount code
-            const response = await fetch('/api/admin', {
+            // Call public API to validate discount code
+            const response = await fetch('/api/validate-discount', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    action: 'validate-discount',
                     code: code
                 })
             });
@@ -794,8 +793,8 @@
 
             if (result.valid) {
                 appliedDiscount = result.discount;
-                messageDiv.textContent = `${result.discount.discountPercent}% discount applied!`;
-                messageDiv.className = 'mt-2 text-sm text-green-600';
+                messageDiv.innerHTML = `✅ <strong>${result.discount.description}</strong> applied!`;
+                messageDiv.className = 'mt-2 text-sm text-green-600 font-medium';
                 messageDiv.classList.remove('hidden');
                 updatePriceDisplay();
 
