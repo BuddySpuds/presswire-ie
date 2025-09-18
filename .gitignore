@@ -73,3 +73,18 @@ STRIPE_MCP_SETUP.md
 STRIPE_TEST_SETUP.md
 EMAIL_SYSTEM_STATUS.md
 CLEANUP_DOCS.sh
+CLAUDE.md
+
+# Test files and bypass pages
+tests/
+test-*.sh
+monitor-*.sh
+bypass-*.html
+get-verification-code.html
+check-pr-status.html
+test-local.sh
+monitor-builds.sh
+
+# Keep test files local only
+*.test.js
+*.spec.js

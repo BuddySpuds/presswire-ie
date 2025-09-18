@@ -21,8 +21,8 @@
     "verification"
   ],
   "author": "Robert Porter <robert@presswire.ie>",
-  "license": "MIT",
-  "copyright": "Copyright (c) 2025 Robert Porter",
+  "license": "PROPRIETARY",
+  "copyright": "Copyright (c) 2025 Robert Porter - All Rights Reserved",
   "dependencies": {
     "@octokit/rest": "^20.0.2",
     "cors": "^2.8.5",
