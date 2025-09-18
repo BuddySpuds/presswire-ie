@@ -117,8 +117,8 @@ exports.handler = async (event, context) => {
             package: prPackage
         });
 
-        // Generate unique slug for the PR
-        const slug = generateSlug(company.name, company.croNumber);
+        // Generate SEO-friendly slug for the PR
+        const slug = generateSlug(enhancedPR.headline || data.headline, company.croNumber);
 
         // Create management token
         const managementToken = crypto.randomBytes(32).toString('hex');
@@ -386,14 +386,16 @@ function generateEnhancedFallback(data) {
     };
 }
 
-function generateSlug(companyName, croNumber) {
-    const cleanName = companyName
+function generateSlug(headline, croNumber) {
+    // Create SEO-friendly slug from headline
+    const cleanSlug = headline
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+        .replace(/^-+|-+$/g, '')
+        .substring(0, 50); // Limit length for readability
 
-    const timestamp = Date.now();
-    return `${cleanName}-${croNumber}-${timestamp}`;
+    // Add CRO number for uniqueness (no timestamp for clean URLs)
+    return `${cleanSlug}-${croNumber}`;
 }
 
 function createPRHTML(data) {
