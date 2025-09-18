@@ -875,13 +875,23 @@
         // Also store the current session ID so success page can retrieve it
         localStorage.setItem('currentSessionId', sessionId);
 
-        // Payment links - TEST MODE (update these with your actual Stripe payment links)
-        // To create: Go to Stripe Dashboard > Payment Links > New
-        const paymentLinks = {
-            launch: 'https://buy.stripe.com/test_bJedR81AZ6C05i65Todwc00', // €1 test link
-            bundle: 'https://buy.stripe.com/test_bJedR81AZ6C05i65Todwc00', // €1 test link
-            enterprise: '/contact.html' // Redirect to contact for custom quotes
+        // Fetch payment links from API to use environment variables
+        let paymentLinks = {
+            launch: 'https://buy.stripe.com/test_bJedR81AZ6C05i65Todwc00', // Fallback
+            bundle: 'https://buy.stripe.com/test_bJedR81AZ6C05i65Todwc00', // Fallback
+            enterprise: '/contact.html' // Enterprise always goes to contact
         };
+
+        // Try to fetch production payment links
+        try {
+            const response = await fetch('/api/get-payment-links');
+            if (response.ok) {
+                const data = await response.json();
+                paymentLinks = data.links || paymentLinks;
+            }
+        } catch (error) {
+            console.log('Using fallback payment links');
+        }
 
         // Build the payment URL with metadata
         const paymentUrl = new URL(paymentLinks[selectedPackage]);
