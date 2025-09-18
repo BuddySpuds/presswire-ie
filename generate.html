@@ -645,14 +645,7 @@
                 verificationToken = data.token;
                 goToStep(2);
             } else {
-                // TEMPORARY: Accept any 6-digit code while email is broken
-                if (code.length === 6 && /^\d+$/.test(code)) {
-                    console.log('Email system down - accepting any 6-digit code');
-                    verificationToken = 'temp-token-' + Date.now();
-                    goToStep(2);
-                } else {
-                    alert(data.error || 'Invalid verification code');
-                }
+                alert(data.error || 'Invalid verification code');
             }
         } catch (error) {
             console.error('Code verification error:', error);
@@ -751,9 +744,9 @@
     function updatePriceDisplay() {
         const selectedPackage = document.querySelector('input[name="package"]:checked').value;
         const prices = {
-            launch: 1,  // €1 test price
-            bundle: 1,  // €1 test price
-            enterprise: 999 // Coming soon
+            launch: 99,
+            bundle: 199,
+            enterprise: 399
         };
 
         const originalPrice = prices[selectedPackage];
@@ -823,9 +816,9 @@
     async function processPayment() {
         const selectedPackage = document.querySelector('input[name="package"]:checked').value;
         const prices = {
-            launch: 1,  // €1 test price
-            bundle: 1,  // €1 test price
-            enterprise: 999 // Coming soon
+            launch: 99,
+            bundle: 199,
+            enterprise: 399
         };
 
         let finalPrice = prices[selectedPackage];

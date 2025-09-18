@@ -11,10 +11,15 @@ Resend is configured to send from `send.presswire.ie` but the MX and SPF records
    ```
    Type: MX
    Name: send
-   Value: feedback-smtp.eu-west-1.amazonses.com
-   Priority: 10
+   Value: 10 feedback-smtp.eu-west-1.amazonses.com
+   Priority: 10 (if separate field)
    TTL: 3600
    ```
+
+   **In Netlify DNS Panel:**
+   - Record Type: MX
+   - Subdomain: `send` (just the word "send", not "send.presswire.ie")
+   - Value: `10 feedback-smtp.eu-west-1.amazonses.com`
 
 2. **TXT/SPF Record for Subdomain:**
    ```
@@ -23,6 +28,11 @@ Resend is configured to send from `send.presswire.ie` but the MX and SPF records
    Value: v=spf1 include:amazonses.com ~all
    TTL: 3600
    ```
+
+   **In Netlify DNS Panel:**
+   - Record Type: TXT
+   - Subdomain: `send`
+   - Value: `v=spf1 include:amazonses.com ~all`
 
 ### Already Correct:
 - ✅ DKIM: `resend._domainkey.presswire.ie` (verified)
