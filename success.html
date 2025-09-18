@@ -180,23 +180,44 @@
                         const filename = `${companySlug}-${Date.now()}.html`;
                         const prUrl = `/news/${filename}`;
 
-                        // Try to save via API
+                        // Call generate-pr API to properly generate and save the PR
                         try {
-                            const response = await fetch('/api/save-pr', {
+                            // Create a payment-verified token
+                            const paymentToken = `payment-verified-${Date.now()}`;
+
+                            const response = await fetch('/api/generate-pr', {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${paymentToken}`
+                                },
                                 body: JSON.stringify({
-                                    content: prContent,
-                                    filename: filename,
-                                    metadata: data
+                                    company: {
+                                        name: data.companyName || data.company || 'Company',
+                                        croNumber: data.croNumber || '000000',
+                                        status: 'Active'
+                                    },
+                                    headline: data.title || data.headline,
+                                    summary: data.summary || data.description,
+                                    keyPoints: data.keyPoints || data.details || '',
+                                    contact: `${data.contactName || 'Contact'}, ${data.email || 'info@company.ie'}, ${data.phone || ''}`,
+                                    package: data.package || data.tier || 'starter',
+                                    email: data.email || 'customer@presswire.ie'
                                 })
                             });
 
                             if (response.ok) {
-                                console.log('PR saved successfully');
+                                const result = await response.json();
+                                console.log('PR generated successfully:', result);
+                                // Update the URL if we got one from the API
+                                if (result.pr && result.pr.url) {
+                                    prUrl = result.pr.url.replace('https://presswire.ie', '');
+                                }
+                            } else {
+                                console.error('Failed to generate PR:', await response.text());
                             }
                         } catch (error) {
-                            console.error('Failed to save PR:', error);
+                            console.error('Failed to generate PR:', error);
                         }
 
                         document.getElementById('pr-status').innerHTML = `

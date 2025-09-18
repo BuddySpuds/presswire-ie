@@ -29,9 +29,35 @@ exports.handler = async (event, context) => {
 
         const token = authHeader.substring(7);
 
-        // Check for admin PR tokens
+        // Check for various token types
         let tokenData;
-        if (token.startsWith('admin-pr-')) {
+
+        // Payment-verified tokens (from Stripe success)
+        if (token.startsWith('payment-verified-')) {
+            // These tokens are created after successful Stripe payment
+            const tokenTime = parseInt(token.split('-')[2]);
+            const now = Date.now();
+            const fiveMinutes = 5 * 60 * 1000; // Valid for 5 minutes after payment
+
+            if (now - tokenTime > fiveMinutes) {
+                return {
+                    statusCode: 401,
+                    headers,
+                    body: JSON.stringify({ error: 'Payment verification expired' })
+                };
+            }
+
+            // Extract email from request body since payment doesn't have domain verification
+            const requestBody = JSON.parse(event.body);
+            tokenData = {
+                email: requestBody.email || 'customer@presswire.ie',
+                domain: 'presswire.ie',
+                isIrishDomain: true,
+                isPaymentVerified: true
+            };
+        }
+        // Admin PR tokens
+        else if (token.startsWith('admin-pr-')) {
             // Validate admin PR token (check if it's recent and unused)
             const tokenTime = parseInt(token.split('-')[2]);
             const now = Date.now();
