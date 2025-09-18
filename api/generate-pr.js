@@ -151,23 +151,35 @@ exports.handler = async (event, context) => {
         };
 
         // Save to GitHub (in production)
-        if (process.env.GITHUB_TOKEN) {
+        try {
             await saveToGitHub(slug, htmlContent);
             await savePRData(prData);
+            console.log(`PR successfully saved: ${slug}`);
+        } catch (githubError) {
+            console.error('GitHub save failed:', githubError);
+            return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({
+                    error: 'Failed to save press release',
+                    message: 'The press release was generated but could not be saved. Please contact support.',
+                    details: process.env.NODE_ENV === 'development' ? githubError.message : undefined
+                })
+            };
+        }
 
-            // Send email notification after PR is saved
-            try {
-                await sendEmailNotification({
-                    email: tokenData.email,
-                    prUrl: `/news/${slug}.html`,
-                    headline: enhancedPR.headline,
-                    company: company.name
-                });
-                console.log(`Email notification sent to ${tokenData.email}`);
-            } catch (emailError) {
-                console.error('Failed to send email notification:', emailError);
-                // Don't fail the whole request if email fails
-            }
+        // Send email notification after PR is saved
+        try {
+            await sendEmailNotification({
+                email: tokenData.email,
+                prUrl: `/news/${slug}.html`,
+                headline: enhancedPR.headline,
+                company: company.name
+            });
+            console.log(`Email notification sent to ${tokenData.email}`);
+        } catch (emailError) {
+            console.error('Failed to send email notification:', emailError);
+            // Don't fail the whole request if email fails
         }
 
         // Generate management URL
@@ -532,15 +544,23 @@ function createPRHTML(data) {
 
 async function saveToGitHub(slug, content) {
     if (!process.env.GITHUB_TOKEN) {
-        console.log('GitHub integration not configured');
-        return;
+        console.error('GitHub integration not configured - GITHUB_TOKEN missing');
+        throw new Error('GitHub integration not configured');
+    }
+
+    if (!process.env.GITHUB_OWNER || !process.env.GITHUB_REPO) {
+        console.error('GitHub config incomplete:', {
+            owner: process.env.GITHUB_OWNER || 'missing',
+            repo: process.env.GITHUB_REPO || 'missing'
+        });
+        throw new Error('GitHub configuration incomplete');
     }
 
     try {
         const { Octokit } = require('@octokit/rest');
         const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
-        await octokit.repos.createOrUpdateFileContents({
+        const result = await octokit.repos.createOrUpdateFileContents({
             owner: process.env.GITHUB_OWNER,
             repo: process.env.GITHUB_REPO,
             path: `news/${slug}.html`,
@@ -549,9 +569,17 @@ async function saveToGitHub(slug, content) {
             branch: 'main'
         });
 
-        console.log(`PR saved to GitHub: news/${slug}.html`);
+        console.log(`PR saved to GitHub: news/${slug}.html`, result.data.commit.sha);
+        return result.data;
     } catch (error) {
-        console.error('Failed to save to GitHub:', error);
+        console.error('Failed to save to GitHub:', {
+            error: error.message,
+            status: error.status,
+            slug: slug,
+            owner: process.env.GITHUB_OWNER,
+            repo: process.env.GITHUB_REPO
+        });
+        throw error; // Re-throw to stop the process
     }
 }
 
