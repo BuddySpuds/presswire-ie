@@ -503,13 +503,13 @@ async function saveToGitHub(slug, content) {
         await octokit.repos.createOrUpdateFileContents({
             owner: process.env.GITHUB_OWNER,
             repo: process.env.GITHUB_REPO,
-            path: `pr/${slug}.html`,
+            path: `news/${slug}.html`,
             message: `Add PR: ${slug}`,
             content: Buffer.from(content).toString('base64'),
             branch: 'main'
         });
 
-        console.log(`PR saved to GitHub: pr/${slug}.html`);
+        console.log(`PR saved to GitHub: news/${slug}.html`);
     } catch (error) {
         console.error('Failed to save to GitHub:', error);
     }
