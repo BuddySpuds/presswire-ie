@@ -123,22 +123,45 @@
         // Update payment ID
         document.getElementById('payment-id').textContent = sessionId.substring(0, 20) + '...';
 
-        // Try to get the session-specific data first
+        // Debug: Log all localStorage keys
+        console.log('All localStorage keys:', Object.keys(localStorage));
+        console.log('Looking for session:', sessionId);
+
+        // Try multiple approaches to find PR data
         const currentSessionId = localStorage.getItem('currentSessionId');
+        console.log('Stored currentSessionId:', currentSessionId);
+
         let prData = null;
 
-        if (currentSessionId) {
-            // Try to get data for this specific session
+        // Method 1: Try the session ID from URL
+        prData = localStorage.getItem(sessionId);
+        if (prData) {
+            console.log('Found data using URL session ID');
+        }
+
+        // Method 2: Try the stored current session
+        if (!prData && currentSessionId) {
             prData = localStorage.getItem(currentSessionId);
             if (prData) {
-                console.log('Using session-specific data:', currentSessionId);
+                console.log('Found data using stored session ID');
             }
         }
 
-        // Fallback to general draft if no session data
+        // Method 3: Try the general draft
         if (!prData) {
             prData = localStorage.getItem('prDraft');
-            console.log('Using general draft data');
+            if (prData) {
+                console.log('Found data using general draft');
+            }
+        }
+
+        // Method 4: Look for any draft_ prefixed keys
+        if (!prData) {
+            const draftKeys = Object.keys(localStorage).filter(k => k.startsWith('draft_'));
+            if (draftKeys.length > 0) {
+                console.log('Found draft keys:', draftKeys);
+                prData = localStorage.getItem(draftKeys[0]);
+            }
         }
 
         if (prData) {
@@ -206,11 +229,27 @@
                 console.error('Error processing PR data:', error);
             }
         } else {
-            // No saved data, just show success
+            // No saved data found
+            console.error('No PR data found in localStorage');
+            console.log('Debug info:', {
+                sessionId: sessionId,
+                currentSessionId: currentSessionId,
+                localStorageKeys: Object.keys(localStorage)
+            });
+
             setTimeout(() => {
                 document.getElementById('pr-status').innerHTML = `
-                    <div class="text-green-600">
-                        ✅ Your press release has been submitted successfully.
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p class="text-yellow-700 font-semibold mb-2">⚠️ Session data not found</p>
+                        <p class="text-sm text-gray-600 mb-3">Your payment was successful but we couldn't retrieve your press release data.</p>
+                        <div class="bg-white border rounded p-3 mt-3">
+                            <p class="text-xs font-mono text-gray-500">Session ID: ${sessionId}</p>
+                            <p class="text-xs font-mono text-gray-500">Keys in storage: ${Object.keys(localStorage).join(', ') || 'none'}</p>
+                        </div>
+                        <p class="text-sm text-gray-700 mt-3">Please contact support@presswire.ie with this information.</p>
+                        <button onclick="generateTestPR()" class="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700">
+                            Generate Test PR Anyway
+                        </button>
                     </div>
                 `;
             }, 2000);
@@ -334,6 +373,53 @@
     </footer>
 </body>
 </html>`;
+    }
+
+    // Test PR generator for when data is missing
+    async function generateTestPR() {
+        const testData = {
+            companyName: "Test Company Ltd",
+            croNumber: "123456",
+            email: "test@example.ie",
+            headline: "Test Press Release - Payment Successful",
+            summary: "This is a test press release generated after successful payment when session data was not found.",
+            body: "This press release was automatically generated to confirm that the payment system is working correctly. The actual press release data was not retrieved from the session storage.",
+            quote: "We're pleased to confirm the payment was processed successfully.",
+            contact: "support@presswire.ie",
+            keywords: "test, payment, verification"
+        };
+
+        try {
+            const prContent = generatePressRelease(testData);
+            const filename = `test-pr-${Date.now()}.html`;
+
+            // Save via API
+            const response = await fetch('/api/save-pr', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: prContent,
+                    filename: filename,
+                    metadata: testData
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                document.getElementById('pr-status').innerHTML = `
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <p class="text-green-700 font-semibold mb-2">✅ Test Press Release Generated!</p>
+                        <a href="${result.url}" class="text-blue-600 hover:text-blue-800 underline text-sm">
+                            View test press release →
+                        </a>
+                        <p class="text-xs text-gray-500 mt-2">Note: This is a test PR. Your actual content was not found.</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error generating test PR:', error);
+            alert('Failed to generate test PR: ' + error.message);
+        }
     }
     </script>
 </body>
