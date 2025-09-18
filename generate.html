@@ -472,13 +472,11 @@
                 <!-- Discount Code Section -->
                 <div class="mb-8 p-4 bg-gray-50 rounded-lg">
                     <h3 class="font-semibold mb-3">Have a discount code?</h3>
-                    <div class="flex gap-3">
-                        <input type="text" id="discount-code" placeholder="Enter discount code"
-                               class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black">
-                        <button onclick="applyDiscount()" type="button"
-                                class="px-6 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-900">
-                            Apply
-                        </button>
+                    <div class="bg-blue-50 border border-blue-200 rounded p-3 text-sm">
+                        <strong>💳 Enter your promo code at checkout</strong><br>
+                        <span class="text-xs text-gray-600">
+                            You'll be prompted to enter your discount code on the secure Stripe payment page.
+                        </span>
                     </div>
                     <div id="discount-message" class="mt-2 text-sm hidden"></div>
                     <div id="price-summary" class="mt-4 pt-4 border-t">
@@ -765,54 +763,24 @@
         }
     }
 
-    async function applyDiscount() {
-        const code = document.getElementById('discount-code').value.trim().toUpperCase();
+    function applyDiscount() {
         const messageDiv = document.getElementById('discount-message');
 
-        if (!code) {
-            messageDiv.textContent = 'Please enter a discount code';
-            messageDiv.className = 'mt-2 text-sm text-red-600';
-            messageDiv.classList.remove('hidden');
-            return;
-        }
+        // Show information about Stripe discount codes
+        messageDiv.innerHTML = `
+            <div class="bg-blue-50 border border-blue-200 rounded p-3 text-sm">
+                <strong>💳 Discount codes are applied at checkout</strong><br>
+                <span class="text-xs text-gray-600 mt-1">
+                    You'll be able to enter your promo code on the Stripe payment page.<br>
+                    Available codes: <strong>SiteTest100</strong> (100% off), <strong>ttGVbxdm</strong> (50% off)
+                </span>
+            </div>
+        `;
+        messageDiv.classList.remove('hidden');
 
-        // Production mode - only real Stripe promo codes accepted
-        // Test codes removed for security
-
-        try {
-            // Call public API to validate discount code
-            const response = await fetch('/api/validate-discount', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    code: code
-                })
-            });
-
-            const result = await response.json();
-
-            if (result.valid) {
-                appliedDiscount = result.discount;
-                messageDiv.innerHTML = `✅ <strong>${result.discount.description}</strong> applied!`;
-                messageDiv.className = 'mt-2 text-sm text-green-600 font-medium';
-                messageDiv.classList.remove('hidden');
-                updatePriceDisplay();
-
-                // Disable the discount input after successful application
-                document.getElementById('discount-code').disabled = true;
-                document.querySelector('button[onclick="applyDiscount()"]').disabled = true;
-            } else {
-                messageDiv.textContent = result.error || 'Invalid discount code';
-                messageDiv.className = 'mt-2 text-sm text-red-600';
-                messageDiv.classList.remove('hidden');
-                appliedDiscount = null;
-                updatePriceDisplay();
-            }
-        } catch (error) {
-            messageDiv.textContent = 'Error applying discount code';
-            messageDiv.className = 'mt-2 text-sm text-red-600';
-            messageDiv.classList.remove('hidden');
-        }
+        // Update the display to show standard pricing
+        appliedDiscount = null;
+        updatePriceDisplay();
     }
 
     async function processPayment() {
@@ -903,7 +871,10 @@
             paymentUrl.searchParams.append('prefilled_email', prData.email);
         }
 
-        // For production, redirect to Stripe Payment Link
+        // Note: Discount codes are handled by Stripe at checkout
+        // We no longer bypass payment - Stripe handles all discounts including 100% off
+
+        // For production with payment required, redirect to Stripe Payment Link
         if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
             window.location.href = paymentUrl.toString();
         } else {
