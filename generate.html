@@ -766,13 +766,27 @@
     }
 
     async function applyDiscount() {
-        const code = document.getElementById('discount-code').value.trim();
+        const code = document.getElementById('discount-code').value.trim().toUpperCase();
         const messageDiv = document.getElementById('discount-message');
 
         if (!code) {
             messageDiv.textContent = 'Please enter a discount code';
             messageDiv.className = 'mt-2 text-sm text-red-600';
             messageDiv.classList.remove('hidden');
+            return;
+        }
+
+        // TEST MODE: Special test discount codes
+        if (code === 'TEST100' || code === 'TESTPR') {
+            appliedDiscount = { discountPercent: 100 };
+            messageDiv.textContent = '100% TEST discount applied!';
+            messageDiv.className = 'mt-2 text-sm text-green-600';
+            messageDiv.classList.remove('hidden');
+            updatePriceDisplay();
+            localStorage.setItem('testMode', 'true');
+            // Disable the discount input after successful application
+            document.getElementById('discount-code').disabled = true;
+            document.querySelector('button[onclick="applyDiscount()"]').disabled = true;
             return;
         }
 
@@ -820,6 +834,15 @@
             bundle: 199,
             enterprise: 399
         };
+
+        // TEST MODE: Override prices for testing
+        // Remove this section before production!
+        if (window.location.search.includes('test=true') || localStorage.getItem('testMode') === 'true') {
+            prices.launch = 1;
+            prices.bundle = 1;
+            prices.enterprise = 1;
+            console.log('TEST MODE: Prices set to €1');
+        }
 
         let finalPrice = prices[selectedPackage];
         if (appliedDiscount) {
