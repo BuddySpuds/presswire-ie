@@ -6,6 +6,22 @@
 // Discount codes configuration
 // In production, store these in environment variables or database
 const DISCOUNT_CODES = {
+    // Testing codes (REMOVE BEFORE GOING FULLY LIVE)
+    'ROBERT100': {
+        discountPercent: 100,
+        description: 'Internal testing - 100% off',
+        validUntil: new Date('2025-12-31'),
+        usageLimit: null, // Unlimited for testing
+        usageCount: 0
+    },
+    'TEST99': {
+        discountPercent: 99,
+        description: 'Payment test - 99% off (€1 charge)',
+        validUntil: new Date('2025-12-31'),
+        usageLimit: null, // Unlimited for testing
+        usageCount: 0
+    },
+
     // Launch discount codes
     'LAUNCH50': {
         discountPercent: 50,
