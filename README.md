@@ -144,9 +144,32 @@ View your PR performance:
 - Documentation: [docs.presswire.ie](https://docs.presswire.ie)
 - GitHub Issues: [Report bugs](https://github.com/yourusername/presswire-ie/issues)
 
-## 📜 License
+## ⚖️ Legal Notice
 
-MIT License - see LICENSE file for details
+**© 2025 PressWire.ie - All Rights Reserved**
+
+This repository contains proprietary technology owned by PressWire.ie. While the code is publicly viewable for transparency and trust, it is **NOT open source**.
+
+### Intellectual Property Notice:
+- **Patent Pending**: Irish Domain Verification System
+- **Trade Secrets**: This code contains proprietary business methods
+- **Copyright**: All code, design, and content are copyright protected
+- **Trademark**: PressWire.ie™ is a trademark of Robert Porter
+
+### Restrictions:
+- ❌ **No Commercial Use**: You may NOT use this code for commercial purposes
+- ❌ **No Derivatives**: You may NOT create derivative works
+- ❌ **No Distribution**: You may NOT redistribute this code
+- ✅ **Viewing Only**: You may view the code for educational purposes only
+
+### Legal Action:
+Unauthorized use, reproduction, or distribution of this code will result in legal action under Irish and EU law.
+
+**For licensing inquiries**: legal@presswire.ie
+
+---
+
+*By viewing this repository, you agree to these terms. If you do not agree, please navigate away immediately.*
 
 ## 👨‍💻 Author
 
