@@ -381,13 +381,13 @@ function sharePR(platform) {
     let shareUrl = '';
     switch(platform) {
         case 'twitter':
-            shareUrl = \`https://twitter.com/intent/tweet?url=\${encodeURIComponent(url)}&text=\${encodeURIComponent(title)}\`;
+            shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
             break;
         case 'linkedin':
-            shareUrl = \`https://www.linkedin.com/sharing/share-offsite/?url=\${encodeURIComponent(url)}\`;
+            shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
             break;
         case 'email':
-            shareUrl = \`mailto:?subject=\${encodeURIComponent(title)}&body=\${encodeURIComponent('Check out this press release: ' + url)}\`;
+            shareUrl = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent('Check out this press release: ' + url)}`;
             break;
     }
 
