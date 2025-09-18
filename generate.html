@@ -448,11 +448,15 @@
                 <div class="space-y-4 mb-8">
                     <h3 class="font-semibold">Select Distribution Package</h3>
 
-                    <label class="block p-4 border rounded-lg cursor-pointer hover:border-black transition">
+                    <label class="block p-4 border-2 border-green-500 bg-green-50 rounded-lg cursor-pointer hover:border-green-600 transition">
                         <input type="radio" name="package" value="launch" checked class="mr-3">
                         <span class="font-medium">Launch Special - €49</span>
                         <span class="text-gray-500 text-sm ml-2">Single press release</span>
-                        <span class="bg-red-500 text-white text-xs px-2 py-1 rounded ml-2">50% OFF</span>
+                        <div class="ml-7 mt-2">
+                            <span class="bg-green-600 text-white text-sm px-3 py-1 rounded-full font-semibold">
+                                🎉 Use code: PressWire50 for 50% OFF
+                            </span>
+                        </div>
                     </label>
 
                     <label class="block p-4 border rounded-lg cursor-pointer hover:border-black transition">
@@ -470,27 +474,42 @@
                 </div>
 
                 <!-- Discount Code Section -->
-                <div class="mb-8 p-4 bg-gray-50 rounded-lg">
-                    <h3 class="font-semibold mb-3">Have a discount code?</h3>
-                    <div class="bg-blue-50 border border-blue-200 rounded p-3 text-sm">
-                        <strong>💳 Enter your promo code at checkout</strong><br>
-                        <span class="text-xs text-gray-600">
-                            On the Stripe payment page, click "Add promotion code" and enter your discount code.
-                        </span>
+                <div class="mb-8 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
+                    <h3 class="font-semibold mb-3 text-lg">🎁 Special Launch Offer!</h3>
+                    <div class="bg-white border border-green-500 rounded p-4">
+                        <div class="flex items-center mb-2">
+                            <span class="text-2xl mr-3">💰</span>
+                            <div>
+                                <strong class="text-green-700 text-base">50% OFF with code: PressWire50</strong>
+                                <p class="text-xs text-gray-600 mt-1">Limited time offer - Expires Oct 31st</p>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t text-sm">
+                            <strong>How to apply:</strong>
+                            <ol class="list-decimal list-inside text-xs text-gray-600 mt-1 ml-2">
+                                <li>Click "Proceed to Payment" below</li>
+                                <li>On Stripe, click "Add promotion code"</li>
+                                <li>Enter: <code class="bg-gray-100 px-2 py-0.5 rounded font-mono">PressWire50</code></li>
+                            </ol>
+                        </div>
                     </div>
                     <div id="discount-message" class="mt-2 text-sm hidden"></div>
                     <div id="price-summary" class="mt-4 pt-4 border-t">
                         <div class="flex justify-between">
-                            <span>Original Price:</span>
+                            <span>Regular Price:</span>
+                            <span class="line-through text-gray-500">€99</span>
+                        </div>
+                        <div class="flex justify-between text-green-600">
+                            <span>Launch Price (already reduced):</span>
                             <span id="original-price" class="font-medium">€49</span>
                         </div>
-                        <div id="discount-row" class="flex justify-between text-green-600 hidden">
-                            <span>Discount:</span>
-                            <span id="discount-amount">-€0</span>
+                        <div class="flex justify-between text-green-600 font-semibold">
+                            <span>With PressWire50 code:</span>
+                            <span>€24.50</span>
                         </div>
                         <div class="flex justify-between text-lg font-bold mt-2 pt-2 border-t">
-                            <span>Total:</span>
-                            <span id="final-price">€49</span>
+                            <span>You Pay (with code):</span>
+                            <span class="text-green-600">€24.50</span>
                         </div>
                     </div>
                 </div>
