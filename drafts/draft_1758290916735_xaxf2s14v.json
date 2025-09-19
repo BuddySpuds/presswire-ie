@@ -1,0 +1,33 @@
+{
+  "id": "draft_1758290916735_xaxf2s14v",
+  "createdAt": "2025-09-19T14:08:36.740Z",
+  "expiresAt": "2025-09-20T14:08:36.740Z",
+  "data": {
+    "company": "Toast ",
+    "companyName": "Toast ",
+    "croNumber": "56782",
+    "email": "info@plantgift.ie",
+    "headline": "Test",
+    "summary": "Testy",
+    "body": "Test\nTesting\nTesticles \nTestosterone ",
+    "quote": "We’re thrilled to test ",
+    "keywords": "Test, testing",
+    "mediaLinks": "test.com",
+    "contact": "Test",
+    "website": "",
+    "contentLink": "",
+    "socialLinks": "",
+    "anchorText": "",
+    "industry": "retail",
+    "types": [
+      "product-launch"
+    ],
+    "regions": [
+      "nationwide"
+    ],
+    "package": "launch",
+    "price": 99,
+    "discountCode": null,
+    "sessionId": "pr_1758290915532_id3u1vrkw"
+  }
+}
